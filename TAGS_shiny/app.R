@@ -8,11 +8,20 @@
 #
 
 library(shiny)
+library(ggplot2)
+library(GeoLight)
 
-#Sample_lig_data <- read.csv("shiny_test/data/PABU222150719.lig",
-#                            header = FALSE)
+geolocatordata <- read.table("data/PABU222150719.lig",
+                   sep = ",",
+                   header = FALSE)
 
-# Define UI for application that draws a histogram
+geolocatordata$datetime <- as.POSIXct(strptime(geolocatordata$V2,
+                                     format = "%d/%m/%y %H:%M:%S",
+                                     tz = "GMT"))
+
+geolocatordata$lightlevel <- geolocatordata$V4
+
+# Define UI for application
 ui <- fluidPage(
   titlePanel(
              h1("Totally Awesome Geolocator Service")),
@@ -76,6 +85,8 @@ sidebarLayout(
        textOutput("selected_name"),
        textOutput("selected_notes"),
       h2("Step 2. Edit and analyze"),
+      plotOutput("plotall",
+                 height = "150px"),
         img(src = "step2.png"),
         h2("Step 3. View and download results"),
         img(src = "step3.png")
@@ -83,7 +94,7 @@ sidebarLayout(
 
 ))
 
-# Define server logic required to draw a histogram
+# Define server logic required
 server <- function(input, output) {
 
   output$selected_filetype <- renderText({ 
@@ -99,6 +110,12 @@ server <- function(input, output) {
     paste0("Your notes say '",
           input$notes,
           "'")
+  })
+  output$plotall <- renderPlot({
+    ggplot(geolocatordata, 
+           aes(datetime,
+               lightlevel)) + 
+      geom_line() 
   })
   
   
