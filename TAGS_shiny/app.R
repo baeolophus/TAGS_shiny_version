@@ -10,15 +10,15 @@
 library(shiny)
 library(ggplot2)
 library(GeoLight)
+library(scales)
 
-geolocatordata <- read.table("data/PABU222150719.lig",
+geolocatordata <- read.csv("data/PABU222150719.lig",
                    sep = ",",
                    header = FALSE)
 
 geolocatordata$datetime <- as.POSIXct(strptime(geolocatordata$V2,
                                      format = "%d/%m/%y %H:%M:%S",
                                      tz = "GMT"))
-
 geolocatordata$lightlevel <- geolocatordata$V4
 
 # Define UI for application
@@ -75,8 +75,8 @@ sidebarLayout(
                              h4("Recapture date"), 
                              value = NULL),
                    br(),
-                   h3("Step 1d. Upload your dataset"),
-                   submitButton("Upload data")
+                   h3("Step 1d. Upload your dataset")#,
+                  # submitButton("Upload data")
                    ),
       mainPanel(
        h2("Step 1. Upload your data"),
@@ -87,6 +87,20 @@ sidebarLayout(
       h2("Step 2. Edit and analyze"),
       plotOutput("plotall",
                  height = "150px"),
+      sliderInput("dateslider", "datetime",
+                  min = min(geolocatordata$datetime),
+                  max = max(geolocatordata$datetime),
+                  value = c(min(geolocatordata$datetime),
+                            max(geolocatordata$datetime)),
+                  width = '100%'),
+      plotOutput("plotselected",
+                 click = "plotselected_click",
+                 brush = brushOpts(
+                   id = "plotselected_brush"
+                 )
+      ),
+      actionButton("exclude_toggle", "Toggle points"),
+      actionButton("exclude_reset", "Reset"),
         img(src = "step2.png"),
         h2("Step 3. View and download results"),
         img(src = "step3.png")
@@ -118,7 +132,43 @@ server <- function(input, output) {
       geom_line() 
   })
   
+  #Store excluded rows
+  vals <- reactiveValues(
+    keeprows = rep(TRUE, nrow(geolocatordata))
+  )
   
+  output$plotselected <- renderPlot({
+    # Plot the kept and excluded points as two separate data sets
+    keep    <- geolocatordata[ vals$keeprows, , drop = FALSE]
+    exclude <- geolocatordata[!vals$keeprows, , drop = FALSE]
+    
+    ggplot(keep, 
+           aes(datetime,
+               lightlevel)) + 
+      geom_point()+
+      geom_line()+
+      geom_point(data = exclude, shape = 21, fill = NA, color = "black", alpha = 0.25)+
+      scale_x_datetime(limits = c(input$dateslider[1],
+                                  input$dateslider[2]))
+  })
+  
+  # Toggle points that are clicked
+  observeEvent(input$plotselected_click, {
+    res <- nearPoints(geolocatordata,
+                      input$plotselected_click,
+                      allRows = TRUE)
+    
+    vals$keeprows <- xor(vals$keeprows, res$selected_)
+  })
+  
+  # Toggle points that are brushed, when button is clicked
+  observeEvent(input$exclude_toggle, {
+    res <- brushedPoints(geolocatordata,
+                         input$plotselected_brush,
+                         allRows = TRUE)
+    
+    vals$keeprows <- xor(vals$keeprows, res$selected_)
+  })
 }
 
 # Run the application 
