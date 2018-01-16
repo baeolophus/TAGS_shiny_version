@@ -1,7 +1,23 @@
 #code modified from: https://gallery.shinyapps.io/106-plot-interaction-exclude/
+#and https://shiny.rstudio.com/reference/shiny/latest/sliderInput.html
 
 library(ggplot2)
 library(Cairo)   # For nicer ggplot2 output when deployed on Linux
+
+## Only run examples in interactive R sessions
+
+  ui <- fluidPage(
+
+  )
+  
+  # Server logic
+  server <- function(input, output) {
+
+  }
+  
+  # Complete app with UI and server components
+  shinyApp(ui, server)
+}
 
 ui <- fluidPage(
   fluidRow(
@@ -16,6 +32,10 @@ ui <- fluidPage(
            actionButton("exclude_reset", "Reset")
     )
   )
+  sliderInput("obs", "Number of observations:",
+              min = 0, max = 1000, value = 500
+  ),
+  plotOutput("plot1")
 )
 
 server <- function(input, output) {
@@ -24,6 +44,7 @@ server <- function(input, output) {
     keeprows = rep(TRUE, nrow(mtcars))
   )
   
+
   output$plot1 <- renderPlot({
     # Plot the kept and excluded points as two separate data sets
     keep    <- mtcars[ vals$keeprows, , drop = FALSE]
