@@ -8,18 +8,20 @@
 #
 
 library(shiny)
+
+library(DT)
 library(ggplot2)
 library(GeoLight)
 library(scales)
 
-geolocatordata <- read.csv("data/PABU222150719.lig",
-                   sep = ",",
-                   header = FALSE)
+#geolocatordata <- read.csv("data/PABU222150719.lig",
+#                   sep = ",",
+#                   header = FALSE)
 
-geolocatordata$datetime <- as.POSIXct(strptime(geolocatordata$V2,
-                                     format = "%d/%m/%y %H:%M:%S",
-                                     tz = "GMT"))
-geolocatordata$lightlevel <- geolocatordata$V4
+#geolocatordata$datetime <- as.POSIXct(strptime(geolocatordata$V2,
+#                                     format = "%d/%m/%y %H:%M:%S",
+#                                     tz = "GMT"))
+#geolocatordata$lightlevel <- geolocatordata$V4
 
 # Define UI for application
 ui <- fluidPage(
@@ -31,7 +33,12 @@ sidebarLayout(
                    br(),
                    h3("Step 1a. Select your file"),
                    fileInput("filename",
-                             label = "Browse for your file"),
+                             label = "Browse for your file",
+                             accept = c("text/csv",
+                                        "text/comma-separated-values,text/plain",
+                                        ".csv",
+                                        ".lig",
+                                        ".lux")),
                    radioButtons("filetype", 
                                 label = "Select your filetype",
                                 choices = list(".lux", 
@@ -87,12 +94,12 @@ sidebarLayout(
       h2("Step 2. Edit and analyze"),
       plotOutput("plotall",
                  height = "150px"),
-      sliderInput("dateslider", "datetime",
-                  min = min(geolocatordata$datetime),
-                  max = max(geolocatordata$datetime),
-                  value = c(min(geolocatordata$datetime),
-                            max(geolocatordata$datetime)),
-                  width = '100%'),
+     # sliderInput("dateslider", "datetime",
+    #              min = min(geolocatordata$datetime),
+    #              max = max(geolocatordata$datetime),
+    #              value = c(min(geolocatordata$datetime),
+    #                        max(geolocatordata$datetime)),
+    #              width = '100%'),
       plotOutput("plotselected",
                  click = "plotselected_click",
                  brush = brushOpts(
@@ -101,6 +108,8 @@ sidebarLayout(
       ),
       actionButton("exclude_toggle", "Toggle points"),
       actionButton("exclude_reset", "Reset"),
+      br(),
+      DTOutput('excludedtbl'),
         img(src = "step2.png"),
         h2("Step 3. View and download results"),
         img(src = "step3.png")
@@ -125,7 +134,28 @@ server <- function(input, output) {
           input$notes,
           "'")
   })
+  
+  geolocatordata <<- reactive({
+    
+    inFile <- input$filename
+    
+    if (is.null(inFile))
+      return(NULL)
+    
+    tbl <- read.csv(inFile$datapath,
+                    sep=",",  
+                    dec = ".")
+    
+    tbl$datetime <- as.POSIXct(strptime(tbl$V2,
+                                                   format = "%d/%m/%y %H:%M:%S",
+                                                   tz = "GMT"))
+    tbl$lightlevel <- tbl$V4
+    
+    return(tbl)
+  })
+  
   output$plotall <- renderPlot({
+    
     ggplot(geolocatordata, 
            aes(datetime,
                lightlevel)) + 
@@ -134,9 +164,10 @@ server <- function(input, output) {
   
   #Store excluded rows
   vals <- reactiveValues(
-    keeprows = rep(TRUE, nrow(geolocatordata))
+    keeprows = rep(TRUE,
+                   times = nrow(geolocatordata))
   )
-  
+
   output$plotselected <- renderPlot({
     # Plot the kept and excluded points as two separate data sets
     keep    <- geolocatordata[ vals$keeprows, , drop = FALSE]
@@ -169,6 +200,8 @@ server <- function(input, output) {
     
     vals$keeprows <- xor(vals$keeprows, res$selected_)
   })
+  output$excludedtbl <- renderDT(geolocatordata[!vals$keeprows, , drop = FALSE],
+                                 server = TRUE)
 }
 
 # Run the application 
