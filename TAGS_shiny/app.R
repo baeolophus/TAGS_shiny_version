@@ -135,7 +135,7 @@ server <- function(input, output) {
           "'")
   })
   
-  geolocatordata <<- reactive({
+  geolocatordata <- reactive({
     
     inFile <- input$filename
     
@@ -165,7 +165,7 @@ server <- function(input, output) {
   #Store excluded rows
   vals <- reactiveValues(
     keeprows = rep(TRUE,
-                   times = nrow(geolocatordata))
+                   length.out = nrow(geolocatordata))
   )
 
   output$plotselected <- renderPlot({
