@@ -147,8 +147,8 @@ server <- function(input, output) {
                     dec = ".")
     
     tbl$datetime <- as.POSIXct(strptime(tbl$V2,
-                                                   format = "%d/%m/%y %H:%M:%S",
-                                                   tz = "GMT"))
+                                        format = "%d/%m/%y %H:%M:%S",
+                                        tz = "GMT"))
     tbl$lightlevel <- tbl$V4
     
     return(tbl)
@@ -156,9 +156,9 @@ server <- function(input, output) {
   
   output$plotall <- renderPlot({
     
-    ggplot(geolocatordata, 
-           aes(datetime,
-               lightlevel)) + 
+    ggplot(geolocatordata(), 
+           aes(geolocatordata()$datetime,
+               geolocatordata()$lightlevel)) + 
       geom_line() 
   })
   
