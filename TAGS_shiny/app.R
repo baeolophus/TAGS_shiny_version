@@ -33,12 +33,13 @@ sidebarLayout(
                    br(),
                    h3("Step 1a. Select your file"),
                    fileInput("filename",
-                             label = "Browse for your file",
-                             accept = c("text/csv",
-                                        "text/comma-separated-values,text/plain",
-                                        ".csv",
-                                        ".lig",
-                                        ".lux")),
+                             label = "Browse for your file"#,
+                             #accept = c("text/csv",
+                             #           "text/comma-separated-values,text/plain",
+                            #            ".csv",
+                            #            ".lig",
+                             #           ".lux")
+                            ),
                    radioButtons("filetype", 
                                 label = "Select your filetype",
                                 choices = list(".lux", 
@@ -83,7 +84,7 @@ sidebarLayout(
                              value = NULL),
                    br(),
                    h3("Step 1d. Upload your dataset")#,
-                  # submitButton("Upload data")
+                   #submitButton("Upload data")
                    ),
       mainPanel(
        h2("Step 1. Upload your data"),
@@ -94,12 +95,12 @@ sidebarLayout(
       h2("Step 2. Edit and analyze"),
       plotOutput("plotall",
                  height = "150px"),
-     # sliderInput("dateslider", "datetime",
-    #              min = min(geolocatordata$datetime),
-    #              max = max(geolocatordata$datetime),
-    #              value = c(min(geolocatordata$datetime),
-    #                        max(geolocatordata$datetime)),
-    #              width = '100%'),
+#      sliderInput("dateslider", "datetime",
+#                  min = min(geolocatordata()$datetime),
+#                  max = max(geolocatordata()$datetime),
+#                  value = c(min(geolocatordata()$datetime),
+#                            max(geolocatordata()$datetime)),
+#                  width = '100%'),
       plotOutput("plotselected",
                  click = "plotselected_click",
                  brush = brushOpts(
@@ -137,14 +138,17 @@ server <- function(input, output) {
   
   geolocatordata <- reactive({
     
+    #https://shiny.rstudio.com/articles/req.html
+    req(input$file)
+    
     inFile <- input$filename
     
     if (is.null(inFile))
       return(NULL)
     
     tbl <- read.csv(inFile$datapath,
-                    sep=",",  
-                    dec = ".")
+                    header = FALSE,
+                    sep=",")
     
     tbl$datetime <- as.POSIXct(strptime(tbl$V2,
                                         format = "%d/%m/%y %H:%M:%S",
@@ -163,15 +167,21 @@ server <- function(input, output) {
   })
   
   #Store excluded rows
-  vals <- reactiveValues(
-    keeprows = rep(TRUE,
-                   length.out = nrow(geolocatordata))
-  )
+  #with modifications from https://groups.google.com/forum/#!topic/shiny-discuss/YyupMW66HZ8 to adapt to file upload
+  vals <- reactiveValues( 
+    keeprows = NULL
+    )
+  
+  observe({
+    vals$keeprows <- rep(TRUE,
+                         nrow(geolocatordata()))
+  })
+  
 
   output$plotselected <- renderPlot({
     # Plot the kept and excluded points as two separate data sets
-    keep    <- geolocatordata[ vals$keeprows, , drop = FALSE]
-    exclude <- geolocatordata[!vals$keeprows, , drop = FALSE]
+    keep    <- geolocatordata()[ vals$keeprows, , drop = FALSE]
+    exclude <- geolocatordata()[!vals$keeprows, , drop = FALSE]
     
     ggplot(keep, 
            aes(datetime,
@@ -185,7 +195,7 @@ server <- function(input, output) {
   
   # Toggle points that are clicked
   observeEvent(input$plotselected_click, {
-    res <- nearPoints(geolocatordata,
+    res <- nearPoints(geolocatordata(),
                       input$plotselected_click,
                       allRows = TRUE)
     
@@ -194,13 +204,13 @@ server <- function(input, output) {
   
   # Toggle points that are brushed, when button is clicked
   observeEvent(input$exclude_toggle, {
-    res <- brushedPoints(geolocatordata,
+    res <- brushedPoints(geolocatordata(),
                          input$plotselected_brush,
                          allRows = TRUE)
     
     vals$keeprows <- xor(vals$keeprows, res$selected_)
   })
-  output$excludedtbl <- renderDT(geolocatordata[!vals$keeprows, , drop = FALSE],
+  output$excludedtbl <- renderDT(geolocatordata()[!vals$keeprows, , drop = FALSE],
                                  server = TRUE)
 }
 
