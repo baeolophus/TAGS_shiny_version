@@ -91,6 +91,12 @@ sidebarLayout(
       actionButton("exclude_toggle", "Toggle points"),
       actionButton("exclude_reset", "Reset"),
       br(),
+
+downloadButton('downloadData', 'Download'),
+br(),
+
+br(),
+
       DTOutput('excludedtbl'),
         img(src = "step2.png"),
         h2("Step 3. View and download results"),
@@ -200,6 +206,21 @@ server <- function(input, output) {
   })
   output$excludedtbl <- renderDT(geolocatordata()[!vals$keeprows, , drop = FALSE],
                                  server = TRUE)
+  
+  #download code here and in UI from
+  #https://stackoverflow.com/questions/41856577/upload-data-change-data-frame-and-download-result-using-shiny-package
+  
+  output$downloadData <- downloadHandler(
+    
+    filename = function() { 
+      paste("data-", Sys.Date(), ".csv", sep="")
+    },
+    
+    content = function(file) {
+      
+      write.csv(geolocatordata(), file)
+      
+    })
 }
 
 # Run the application 
