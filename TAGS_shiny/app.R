@@ -96,7 +96,7 @@ sidebarLayout(
       plotOutput("plotall",
                  height = "150px"),
 #Input slider based on reactive dataframe.
-#      https://stackoverflow.com/questions/18700589/interactive-reactive-change-of-min-max-values-of-sliderinput
+#https://stackoverflow.com/questions/18700589/interactive-reactive-change-of-min-max-values-of-sliderinput
       uiOutput("dateslider"),
 
       plotOutput("plotselected",
@@ -137,22 +137,18 @@ server <- function(input, output) {
   geolocatordata <- reactive({
     
     #https://shiny.rstudio.com/articles/req.html
-    req(input$file)
-    
+    req(input$filename)
     inFile <- input$filename
-    
     if (is.null(inFile))
       return(NULL)
     
     tbl <- read.csv(inFile$datapath,
                     header = FALSE,
                     sep=",")
-    
     tbl$datetime <- as.POSIXct(strptime(tbl$V2,
                                         format = "%d/%m/%y %H:%M:%S",
                                         tz = "GMT"))
     tbl$lightlevel <- tbl$V4
-    
     return(tbl)
   })
   #dynamic slider based on reactive data
