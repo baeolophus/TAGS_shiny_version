@@ -98,12 +98,7 @@ sidebarLayout(
 #Input slider based on reactive dataframe.
 #      https://stackoverflow.com/questions/18700589/interactive-reactive-change-of-min-max-values-of-sliderinput
       uiOutput("dateslider"),
-#      sliderInput("dateslider", "datetime",
-#                  min = min(geolocatordata()$datetime),
-#                  max = max(geolocatordata()$datetime),
-#                  value = c(min(geolocatordata()$datetime),
-#                            max(geolocatordata()$datetime)),
-#                  width = '100%'),
+
       plotOutput("plotselected",
                  click = "plotselected_click",
                  brush = brushOpts(
@@ -229,5 +224,7 @@ server <- function(input, output) {
 }
 
 # Run the application 
-shinyApp(ui = ui, server = server)
+shinyApp(ui = ui, 
+         server = server,
+         options = list(display.mode = 'showcase'))
 
