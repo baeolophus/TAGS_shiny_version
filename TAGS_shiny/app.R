@@ -1,12 +1,3 @@
-#
-# This is a Shiny web application. You can run the application by clicking
-# the 'Run App' button above.
-#
-# Find out more about building applications with Shiny here:
-#
-#    http://shiny.rstudio.com/
-#
-
 library(shiny)
 
 library(DT)
@@ -14,14 +5,6 @@ library(ggplot2)
 library(GeoLight)
 library(scales)
 
-#geolocatordata <- read.csv("data/PABU222150719.lig",
-#                   sep = ",",
-#                   header = FALSE)
-
-#geolocatordata$datetime <- as.POSIXct(strptime(geolocatordata$V2,
-#                                     format = "%d/%m/%y %H:%M:%S",
-#                                     tz = "GMT"))
-#geolocatordata$lightlevel <- geolocatordata$V4
 
 # Define UI for application
 ui <- fluidPage(
@@ -116,8 +99,8 @@ sidebarLayout(
 
 ))
 
-# Define server logic required
 server <- function(input, output) {
+  options(shiny.maxRequestSize=30*1024^2) 
 
   output$selected_filetype <- renderText({ 
     paste0("Your filetype is ", input$filetype)
