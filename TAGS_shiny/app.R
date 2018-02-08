@@ -89,6 +89,12 @@ sidebarLayout(
                    id = "plotselected_brush"
                  )
       ),
+########
+#pager for zoomed data
+numericInput('num_rows_per_page', 'Rows Per Page', value = 10, min = 1),
+verbatimTextOutput('debug'),
+pageruiInput('pager'),
+########
       actionButton("exclude_toggle", "Toggle points"),
       actionButton("exclude_reset", "Reset"),
       br(),
@@ -106,7 +112,7 @@ br(),
 
 ))
 
-server <- function(input, output) {
+server <- function(input, output, session) {
   options(shiny.maxRequestSize=30*1024^2) 
 
   output$selected_filetype <- renderText({ 
@@ -172,20 +178,67 @@ server <- function(input, output) {
                          nrow(geolocatordata()))
   })
   
+  #########################
+  #Paging implementation details from 
+  #http://oddhypothesis.blogspot.com/2015/10/paging-widget-for-shiny-apps.html
+  
+  pages = reactive({
+    nrow_data = nrow(geolocatordata())
+    # rows_per_page = ceiling(nrow_data / input$pager$pages_total)
+    
+    row_starts = seq(1, nrow_data, by = input$num_rows_per_page)
+    row_stops  = c(row_starts[-1] - 1, nrow_data)
+    
+    page_rows = mapply(`:`, row_starts, row_stops, SIMPLIFY=F)
+    
+    return(page_rows)
+  })
+  
+  output$debug = renderPrint({
+    str(input$pager)
+  })
+
+  observeEvent(
+    eventExpr = {
+      c(input$num_rows_per_page, input$sel_dataset)
+    },
+    handlerExpr = {
+      
+      pages_total = ceiling(nrow(geolocatordata()) / input$num_rows_per_page)
+      
+      page_current = input$pager$page_current
+      if (input$pager$page_current > pages_total) {
+        page_current = pages_total
+      }
+      
+      updatePageruiInput(
+        session, 'pager',
+        page_current = page_current,
+        pages_total = pages_total
+      )
+    }
+  )
+  
+  #########################
 
   output$plotselected <- renderPlot({
     # Plot the kept and excluded points as two separate data sets
     keep    <- geolocatordata()[ vals$keeprows, , drop = FALSE]
     exclude <- geolocatordata()[!vals$keeprows, , drop = FALSE]
+    rows = pages()[[input$pager$page_current]]
 
-    ggplot(keep, 
+    ggplot(keep[rows,], 
            aes(datetime,
                lightlevel)) + 
       geom_point()+
       geom_line()+
-      geom_point(data = exclude, shape = 21, fill = NA, color = "black", alpha = 0.25)+
-      scale_x_datetime(limits = c(input$dateslider[1],
-                                  input$dateslider[2]))
+      geom_point(data = exclude[rows,],
+                 shape = 21, 
+                 fill = NA, 
+                 color = "black",
+                 alpha = 0.25)+
+      scale_x_datetime(limits = c(min(keep[rows,"datetime"],
+                                  max(keep[rows,"datetime"]))))
   })
   
   # Toggle points that are clicked
@@ -207,7 +260,7 @@ server <- function(input, output) {
   })
   
   
- #experimenting with where to put this
+  #experimenting with where to put this
   #geolocatordata()$edited <- reactive(vals$keeprows)
   
   output$excludedtbl <- renderDT(geolocatordata()[!vals$keeprows, , drop = FALSE],
@@ -217,7 +270,6 @@ server <- function(input, output) {
   
   #download code here and in UI from
   #https://stackoverflow.com/questions/41856577/upload-data-change-data-frame-and-download-result-using-shiny-package
-  
   output$downloadData <- downloadHandler(
     
     filename = function() { 
