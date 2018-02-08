@@ -230,8 +230,8 @@ server <- function(input, output, session) {
     rows = pages()[[input$pager$page_current]]
     
     # Plot the kept and excluded points as two separate data sets
-    keep    <- geolocatordata()[ vals$keeprows, , drop = FALSE]
-    exclude <- geolocatordata()[!vals$keeprows, , drop = FALSE]
+    keep    <- geolocatordata()[ vals$keeprows, , drop = FALSE] %>% .[rows,]
+    exclude <- geolocatordata()[!vals$keeprows, , drop = FALSE] %>% .[rows,]
 
     ggplot(keep, 
            aes(datetime,
