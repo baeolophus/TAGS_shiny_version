@@ -3,6 +3,7 @@ library(shiny)
 library(DT)
 library(ggplot2)
 library(GeoLight)
+library(lubridate)
 library(scales)
 
 
@@ -147,7 +148,7 @@ server <- function(input, output) {
                 min = min(geolocatordata()$datetime),
                 max = max(geolocatordata()$datetime),
                 value = c(min(geolocatordata()$datetime),
-                          max(geolocatordata()$datetime),
+                          min(geolocatordata()$datetime)+days(2), #This sets the initial range to first two days of the dataset
                           width = '100%'))
   })
   
@@ -176,7 +177,7 @@ server <- function(input, output) {
     # Plot the kept and excluded points as two separate data sets
     keep    <- geolocatordata()[ vals$keeprows, , drop = FALSE]
     exclude <- geolocatordata()[!vals$keeprows, , drop = FALSE]
-    
+
     ggplot(keep, 
            aes(datetime,
                lightlevel)) + 
@@ -204,8 +205,15 @@ server <- function(input, output) {
     
     vals$keeprows <- xor(vals$keeprows, res$selected_)
   })
+  
+  
+ #experimenting with where to put this
+  #geolocatordata()$edited <- reactive(vals$keeprows)
+  
   output$excludedtbl <- renderDT(geolocatordata()[!vals$keeprows, , drop = FALSE],
                                  server = TRUE)
+  
+  
   
   #download code here and in UI from
   #https://stackoverflow.com/questions/41856577/upload-data-change-data-frame-and-download-result-using-shiny-package
