@@ -91,9 +91,13 @@ sidebarLayout(
       ),
 ########
 #pager for zoomed data
-numericInput('num_rows_per_page', 'Rows Per Page', value = 10, min = 1),
+numericInput('num_rows_per_page', 
+             'Rows Per Page',
+             value = 100,
+             min = 1),
 verbatimTextOutput('debug'),
-pageruiInput('pager'),
+pageruiInput('pager',
+             page_current = 1),
 ########
       actionButton("exclude_toggle", "Toggle points"),
       actionButton("exclude_reset", "Reset"),
@@ -222,23 +226,25 @@ server <- function(input, output, session) {
   #########################
 
   output$plotselected <- renderPlot({
+    #First generate true/false list of which rows are plotted via pages().
+    rows = pages()[[input$pager$page_current]]
+    
     # Plot the kept and excluded points as two separate data sets
     keep    <- geolocatordata()[ vals$keeprows, , drop = FALSE]
     exclude <- geolocatordata()[!vals$keeprows, , drop = FALSE]
-    rows = pages()[[input$pager$page_current]]
 
-    ggplot(keep[rows,], 
+    ggplot(keep, 
            aes(datetime,
                lightlevel)) + 
       geom_point()+
       geom_line()+
-      geom_point(data = exclude[rows,],
+      geom_point(data = exclude,
                  shape = 21, 
                  fill = NA, 
                  color = "black",
                  alpha = 0.25)+
-      scale_x_datetime(limits = c(min(keep[rows,"datetime"],
-                                  max(keep[rows,"datetime"]))))
+      scale_x_datetime()#(limits = c(min(keep[rows,"datetime"],
+      #                            min(keep[rows,"datetime"]+100))))
   })
   
   # Toggle points that are clicked
@@ -259,15 +265,19 @@ server <- function(input, output, session) {
     vals$keeprows <- xor(vals$keeprows, res$selected_)
   })
   
-  
-  #experimenting with where to put this
-  #geolocatordata()$edited <- reactive(vals$keeprows)
-  
   output$excludedtbl <- renderDT(geolocatordata()[!vals$keeprows, , drop = FALSE],
                                  server = TRUE)
   
+  ##################
+  #Adding true/false keep column to new reactive data frame
+  ##################
+  geolocatordata_keep <- reactive ({
+    df <- geolocatordata()
+    df$keeprows <- vals$keeprows
+    return(df)
+  })
   
-  
+  ##################
   #download code here and in UI from
   #https://stackoverflow.com/questions/41856577/upload-data-change-data-frame-and-download-result-using-shiny-package
   output$downloadData <- downloadHandler(
@@ -278,7 +288,7 @@ server <- function(input, output, session) {
     
     content = function(file) {
       
-      write.csv(geolocatordata(), file)
+      write.csv(geolocatordata_keep(), file)
       
     })
 }
