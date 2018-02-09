@@ -6,7 +6,7 @@ library(GeoLight)
 library(lubridate)
 library(scales)
 
-source("pagerui.R")
+source("global.R")
 
 # Define UI for application
 ui <- fluidPage(
@@ -178,6 +178,16 @@ server <- function(input, output, session) {
       geom_hline(yintercept = input$light_threshold,
                  col = "orange")
   })
+  
+  
+  twilights <- reactive ({
+    twl <- TAGS_twilight_calc(geolocatordata()$datetime, 
+                              geolocatordata()$light, 
+                              LightThreshold = input$light_threshold)
+  allTwilights <- twl[1]
+  return(allTwilights)
+  })
+  
   
   #Store excluded rows
   #with modifications from https://groups.google.com/forum/#!topic/shiny-discuss/YyupMW66HZ8 to adapt to file upload
