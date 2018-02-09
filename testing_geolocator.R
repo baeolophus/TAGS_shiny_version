@@ -51,8 +51,16 @@ hoopoe1$datetime <- as.POSIXct(strptime(hoopoe1$datetime, format = "%Y-%m-%d %H:
 twl <- twilightCalc(hoopoe1$datetime, 
                     hoopoe1$light, 
                     LightThreshold = 1.5,
-                    ask = T)
+                    ask = F,
+                    allTwilights = TRUE)
 head(twl)
+
+source("TAGS_shiny/source_TAGS_twilightCalc.R")
+twl <- TAGS_twilight_calc(hoopoe1$datetime, 
+                    hoopoe1$light, 
+                    LightThreshold = 1.5)
+head(twl)
+
 
 PABU <- read.table("TAGS_shiny/data/PABU222150719.lig",
                               sep = ",",
