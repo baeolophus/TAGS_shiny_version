@@ -296,7 +296,7 @@ server <- function(input, output, session) {
   })
   
   ##################
-=======
+
   
  #experimenting with where to put this
   #geolocatordata()$edited <- reactive(vals$keeprows)
