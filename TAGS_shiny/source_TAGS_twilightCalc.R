@@ -4,11 +4,11 @@
 TAGS_twilight_calc <- function (datetime,
                                 light, 
                                 LightThreshold = TRUE, 
-                                preSelection = TRUE, 
+                                preSelection = TRUE, #remove
                                 maxLight = NULL, 
-                                ask = TRUE,
-                                nsee = 500, 
-                                allTwilights = FALSE) 
+                                ask = FALSE, #remove
+                                nsee = 500, #remove
+                                allTwilights = TRUE) 
 {
   if (class(datetime)[1] != "POSIXct") {
     stop(sprintf("datetime need to be provided as POSIXct class object."), 
@@ -16,7 +16,8 @@ TAGS_twilight_calc <- function (datetime,
   }
   else {
     bas <- data.frame(datetime = as.POSIXct(as.character(datetime), 
-                                            "UTC"), light)
+                                            "UTC"),
+                      light)
   }
   if (is.numeric(LightThreshold)) {
     LightThreshold <- as.numeric(LightThreshold)
@@ -29,8 +30,13 @@ TAGS_twilight_calc <- function (datetime,
     LightThreshold <- (as.numeric(as.character(r[nr, 1]))) + 
       3
   }
+  
+
+  source("TAGS_shiny/source_iPreselection.R")
+  source("TAGS_shiny/source_iTwilightEvents.R")
   out <- i.preSelection(bas$datetime, bas$light, LightThreshold)[, 
                                                                  -1]
+  ################## I think delete between these two?
   if (!preSelection) 
     out$mod <- 0
   if (ask) {
@@ -69,6 +75,7 @@ TAGS_twilight_calc <- function (datetime,
     cat("Thank you!\n\n")
     graphics.off()
   }
+  ####################
   results <- list()
   out <- subset(out, out$mod == 0)[, -3]
   raw <- data.frame(datetime = c(as.POSIXct(datetime, "UTC"), 
