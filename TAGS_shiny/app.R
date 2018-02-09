@@ -164,7 +164,11 @@ server <- function(input, output, session) {
                 min = min(geolocatordata()$datetime),
                 max = max(geolocatordata()$datetime),
                 value = c(min(geolocatordata()$datetime),
+
                           min(geolocatordata()$datetime)+days(2), #This sets the initial range to first two days of the dataset
+
+
+
                           width = '100%'))
   })
   
@@ -233,12 +237,18 @@ server <- function(input, output, session) {
   #########################
 
   output$plotselected <- renderPlot({
+
     #First generate true/false list of which rows are plotted via pages().
     rows = pages()[[input$pager$page_current]]
     
     # Plot the kept and excluded points as two separate data sets
     keep    <- geolocatordata()[ vals$keeprows, , drop = FALSE] %>% .[rows,]
     exclude <- geolocatordata()[!vals$keeprows, , drop = FALSE] %>% .[rows,]
+
+
+
+
+
 
     ggplot(keep, 
            aes(datetime,
@@ -272,6 +282,7 @@ server <- function(input, output, session) {
     vals$keeprows <- xor(vals$keeprows, res$selected_)
   })
   
+
   output$excludedtbl <- renderDT(geolocatordata()[!vals$keeprows, , drop = FALSE],
                                  server = TRUE)
   
@@ -285,6 +296,17 @@ server <- function(input, output, session) {
   })
   
   ##################
+=======
+  
+ #experimenting with where to put this
+  #geolocatordata()$edited <- reactive(vals$keeprows)
+  
+  output$excludedtbl <- renderDT(geolocatordata()[!vals$keeprows, , drop = FALSE],
+                                 server = TRUE)
+  
+  
+  
+
   #download code here and in UI from
   #https://stackoverflow.com/questions/41856577/upload-data-change-data-frame-and-download-result-using-shiny-package
   output$downloadData <- downloadHandler(
