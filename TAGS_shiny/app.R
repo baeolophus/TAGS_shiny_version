@@ -73,7 +73,7 @@ sidebarLayout(
                    h3("Step 2. Light threshold entry"),
                    numericInput("light_threshold", 
                                 h4("Light threshold"), 
-                                value = 2,
+                                value = 5.5,
                                 step = 0.1)
                    ),
       mainPanel(
@@ -164,11 +164,7 @@ server <- function(input, output, session) {
                 min = min(geolocatordata()$datetime),
                 max = max(geolocatordata()$datetime),
                 value = c(min(geolocatordata()$datetime),
-
                           min(geolocatordata()$datetime)+days(2), #This sets the initial range to first two days of the dataset
-
-
-
                           width = '100%'))
   })
   
@@ -179,7 +175,8 @@ server <- function(input, output, session) {
            aes(geolocatordata()$datetime,
                geolocatordata()$lightlevel)) + 
       geom_line()+
-      geom_hline(yintercept = input$light_threshold)
+      geom_hline(yintercept = input$light_threshold,
+                 col = "orange")
   })
   
   #Store excluded rows
@@ -245,11 +242,6 @@ server <- function(input, output, session) {
     keep    <- geolocatordata()[ vals$keeprows, , drop = FALSE] %>% .[rows,]
     exclude <- geolocatordata()[!vals$keeprows, , drop = FALSE] %>% .[rows,]
 
-
-
-
-
-
     ggplot(keep, 
            aes(datetime,
                lightlevel)) + 
@@ -261,7 +253,8 @@ server <- function(input, output, session) {
                  color = "black",
                  alpha = 0.25)+
       scale_x_datetime()+
-      geom_hline(yintercept = input$light_threshold)
+      geom_hline(yintercept = input$light_threshold,
+                 col = "orange")
   })
   
   # Toggle points that are clicked
