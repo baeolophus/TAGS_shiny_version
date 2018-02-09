@@ -6,6 +6,7 @@ library(GeoLight)
 library(lubridate)
 library(scales)
 
+source("pagerui.R")
 
 # Define UI for application
 ui <- fluidPage(
@@ -67,8 +68,13 @@ sidebarLayout(
                              h4("Recapture date"), 
                              value = NULL),
                    br(),
-                   h3("Step 1d. Upload your dataset")#,
+                   h3("Step 1d. Upload your dataset"),
                    #submitButton("Upload data")
+                   h3("Step 2. Light threshold entry"),
+                   numericInput("light_threshold", 
+                                h4("Light threshold"), 
+                                value = 2,
+                                step = 0.1)
                    ),
       mainPanel(
        h2("Step 1. Upload your data"),
@@ -168,7 +174,8 @@ server <- function(input, output, session) {
     ggplot(geolocatordata(), 
            aes(geolocatordata()$datetime,
                geolocatordata()$lightlevel)) + 
-      geom_line() 
+      geom_line()+
+      geom_hline(yintercept = input$light_threshold)
   })
   
   #Store excluded rows
@@ -243,8 +250,8 @@ server <- function(input, output, session) {
                  fill = NA, 
                  color = "black",
                  alpha = 0.25)+
-      scale_x_datetime()#(limits = c(min(keep[rows,"datetime"],
-      #                            min(keep[rows,"datetime"]+100))))
+      scale_x_datetime()+
+      geom_hline(yintercept = input$light_threshold)
   })
   
   # Toggle points that are clicked
