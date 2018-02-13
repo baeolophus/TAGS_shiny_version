@@ -168,26 +168,40 @@ server <- function(input, output, session) {
                           width = '100%'))
   })
   
+  
 
+  
   output$plotall <- renderPlot({
-    
-    ggplot(geolocatordata(), 
-           aes(geolocatordata()$datetime,
-               geolocatordata()$lightlevel)) + 
-      geom_line()+
-      geom_hline(yintercept = input$light_threshold,
-                 col = "orange")
-  })
-  
-  
-  twilights <- reactive ({
-    twl <- TAGS_twilight_calc(geolocatordata()$datetime, 
-                              geolocatordata()$light, 
-                              LightThreshold = input$light_threshold)
 
-  return(twl)
+      twl <- TAGS_twilight_calc(geolocatordata()$datetime, 
+                                geolocatordata()$light, 
+                                LightThreshold = input$light_threshold)
+
+
+
+    consecTwilights <- twl[[2]]
+    consecTwilights$timetonext <- difftime(time1 = consecTwilights$tSecond,
+                                time2 = consecTwilights$tFirst,
+                                units = "hours")
+    probTwilights <- consecTwilights[consecTwilights$timetonext < 5,]
+
+    ggplot() + 
+      geom_line(data = geolocatordata(), 
+                mapping = aes(geolocatordata()$datetime,
+                    geolocatordata()$lightlevel))+
+      geom_hline(yintercept = input$light_threshold,
+                 col = "orange")+
+      geom_rect(data = probTwilights,
+                mapping = aes(xmin = tFirst,
+                    xmax = tSecond,
+                    ymin = -Inf,
+                    ymax = Inf),
+                col = "red",
+                fill = "red",
+                alpha = 0.5)
   })
   
+
   
   #Store excluded rows
   #with modifications from https://groups.google.com/forum/#!topic/shiny-discuss/YyupMW66HZ8 to adapt to file upload
@@ -264,7 +278,8 @@ server <- function(input, output, session) {
                  alpha = 0.25)+
       scale_x_datetime()+
       geom_hline(yintercept = input$light_threshold,
-                 col = "orange")
+                 col = "orange")+
+      
   })
   
   # Toggle points that are clicked
