@@ -1,5 +1,7 @@
 #Modified from source code of GeoLight
 #Distributed under GPL3 license.
+source("source_iPreselection.R")
+source("source_iTwilightEvents.R")
 
 TAGS_twilight_calc <- function (datetime,
                                 light, 
@@ -32,8 +34,7 @@ TAGS_twilight_calc <- function (datetime,
   }
   
 
-  source("TAGS_shiny/source_iPreselection.R")
-  source("TAGS_shiny/source_iTwilightEvents.R")
+
   out <- i.preSelection(bas$datetime, bas$light, LightThreshold)[, 
                                                                  -1]
   ################## I think delete between these two?
