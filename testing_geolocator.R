@@ -61,7 +61,30 @@ twl <- TAGS_twilight_calc(hoopoe1$datetime,
                     LightThreshold = 1.5)
 head(twl)
 
+allTwilights <- twl[[1]]
+str(allTwilights[allTwilights$type >0,])
+consecTwilights <- twl[[2]]
+consecTwilights$timetonext <- difftime(time1 = consecTwilights$tSecond,
+                                       time2 = consecTwilights$tFirst,
+                                       units = "hours")
+probTwilights <- consecTwilights[consecTwilights$timetonext < 10,]
 
+
+  ggplot()+
+    geom_line(data = hoopoe1, 
+              aes(hoopoe1$datetime,
+                  hoopoe1$light))+
+    geom_rect(data = probTwilights,
+         aes(xmin = tFirst,
+             xmax = tSecond,
+             ymin = -Inf,
+             ymax = Inf),
+         col = "red",
+         fill = "red",
+         alpha = 0.5)
+  
+
+  
 PABU <- read.table("TAGS_shiny/data/PABU222150719.lig",
                               sep = ",",
                               header = FALSE)
