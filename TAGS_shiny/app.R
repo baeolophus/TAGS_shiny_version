@@ -184,8 +184,8 @@ server <- function(input, output, session) {
     twl <- TAGS_twilight_calc(geolocatordata()$datetime, 
                               geolocatordata()$light, 
                               LightThreshold = input$light_threshold)
-  allTwilights <- twl[1]
-  return(allTwilights)
+
+  return(twl)
   })
   
   
