@@ -173,11 +173,9 @@ server <- function(input, output, session) {
   
   output$plotall <- renderPlot({
 
-      twl <- TAGS_twilight_calc(geolocatordata()$datetime, 
+    twl <- TAGS_twilight_calc(geolocatordata()$datetime, 
                                 geolocatordata()$light, 
                                 LightThreshold = input$light_threshold)
-
-
 
     consecTwilights <- twl[[2]]
     consecTwilights$timetonext <- difftime(time1 = consecTwilights$tSecond,
@@ -256,7 +254,14 @@ server <- function(input, output, session) {
   )
   
   #########################
-
+  prev_vals <- NULL
+  structures <- reactiveValues(data = data.frame(box_id = numeric(),
+                                                 xmin = numeric(),
+                                                 ymin = numeric(), 
+                                                 xmax = numeric(), 
+                                                 xmax = numeric()))
+  
+  
   output$plotselected <- renderPlot({
 
     #First generate true/false list of which rows are plotted via pages().
@@ -269,6 +274,8 @@ server <- function(input, output, session) {
     ggplot(keep, 
            aes(datetime,
                lightlevel)) + 
+      coord_cartesian(xlim = c(min(geolocatordata()[rows,"datetime"]), max(geolocatordata()[rows,"datetime"])),
+                      ylim = c(min(geolocatordata()[,"lightlevel"]), max(geolocatordata()[,"lightlevel"])))+
       geom_point()+
       geom_line()+
       geom_point(data = exclude,
@@ -278,7 +285,9 @@ server <- function(input, output, session) {
                  alpha = 0.25)+
       scale_x_datetime()+
       geom_hline(yintercept = input$light_threshold,
-                 col = "orange")+
+                 col = "orange")
+
+    
       
   })
   
@@ -300,9 +309,33 @@ server <- function(input, output, session) {
     vals$keeprows <- xor(vals$keeprows, res$selected_)
   })
   
+  
+  #For drrawing multiple rectangles, but haven't added the code back in on plot.
+  observe({
+    e <- input$plot_brush
+    if (!is.null(e)) {
+      vals2 <- data.frame(xmin = round(e$xmin, 1),
+                         ymin = round(e$ymin, 1), 
+                         xmax = round(e$xmax, 1),
+                         ymax = round(e$ymax, 1))
+      if (identical(vals2,
+                    prev_vals)) return() #We dont want to change anything if the values havent changed.
+      structures$data <- rbind(structures$data,
+                               cbind(data.frame(box_id = nrow(structures$data)+1),
+                                     vals2))
+      prev_vals <<- vals2
+    }
+  })
+  
+###################
+#multiple rectangles
+  #from https://stackoverflow.com/questions/46450531/can-users-interactively-draw-rectangles-on-an-image-in-r-via-shiny-app
+  
 
-  output$excludedtbl <- renderDT(geolocatordata()[!vals$keeprows, , drop = FALSE],
-                                 server = TRUE)
+
+  ###################
+ # output$excludedtbl <- renderDT(geolocatordata()[!vals$keeprows, , drop = FALSE],
+#                                 server = TRUE)
   
   ##################
   #Adding true/false keep column to new reactive data frame
@@ -315,15 +348,6 @@ server <- function(input, output, session) {
   
   ##################
 
-  
- #experimenting with where to put this
-  #geolocatordata()$edited <- reactive(vals$keeprows)
-  
-  output$excludedtbl <- renderDT(geolocatordata()[!vals$keeprows, , drop = FALSE],
-                                 server = TRUE)
-  
-  
-  
 
   #download code here and in UI from
   #https://stackoverflow.com/questions/41856577/upload-data-change-data-frame-and-download-result-using-shiny-package
