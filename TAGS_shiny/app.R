@@ -168,20 +168,21 @@ server <- function(input, output, session) {
                           width = '100%'))
   })
   
+  probTwilights <- reactive ({
+  twl <- TAGS_twilight_calc(geolocatordata()$datetime, 
+                            geolocatordata()$light, 
+                            LightThreshold = input$light_threshold)
   
-
+  consecTwilights <- twl[[2]]
+  consecTwilights$timetonext <- difftime(time1 = consecTwilights$tSecond,
+                                         time2 = consecTwilights$tFirst,
+                                         units = "hours")
+  probTwilights <- consecTwilights[consecTwilights$timetonext < 5,]
+})
   
   output$plotall <- renderPlot({
 
-    twl <- TAGS_twilight_calc(geolocatordata()$datetime, 
-                                geolocatordata()$light, 
-                                LightThreshold = input$light_threshold)
 
-    consecTwilights <- twl[[2]]
-    consecTwilights$timetonext <- difftime(time1 = consecTwilights$tSecond,
-                                time2 = consecTwilights$tFirst,
-                                units = "hours")
-    probTwilights <- consecTwilights[consecTwilights$timetonext < 5,]
 
     ggplot() + 
       geom_line(data = geolocatordata(), 
@@ -189,7 +190,7 @@ server <- function(input, output, session) {
                     geolocatordata()$lightlevel))+
       geom_hline(yintercept = input$light_threshold,
                  col = "orange")+
-      geom_rect(data = probTwilights,
+      geom_rect(data = probTwilights(),
                 mapping = aes(xmin = tFirst,
                     xmax = tSecond,
                     ymin = -Inf,
@@ -283,7 +284,15 @@ server <- function(input, output, session) {
       coord_cartesian(xlim = c(min(geolocatordata()[rows,"datetime"]), max(geolocatordata()[rows,"datetime"])),
                       ylim = c(min(geolocatordata()[,"lightlevel"]), max(geolocatordata()[,"lightlevel"])))+
       geom_hline(yintercept = input$light_threshold,
-                 col = "orange")
+                 col = "orange")+
+      geom_rect(data = probTwilights(),
+                mapping = aes(xmin = tFirst,
+                              xmax = tSecond,
+                              ymin = -Inf,
+                              ymax = Inf),
+                col = "red",
+                fill = "red",
+                alpha = 0.5)
       
   })
   
