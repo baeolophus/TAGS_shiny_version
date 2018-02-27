@@ -253,13 +253,7 @@ server <- function(input, output, session) {
     }
   )
   
-  #########################
-  prev_vals <- NULL
-  structures <- reactiveValues(data = data.frame(box_id = numeric(),
-                                                 xmin = numeric(),
-                                                 ymin = numeric(), 
-                                                 xmax = numeric(), 
-                                                 xmax = numeric()))
+  ########################
   
   
   output$plotselected <- renderPlot({
@@ -271,23 +265,25 @@ server <- function(input, output, session) {
     keep    <- geolocatordata()[ vals$keeprows, , drop = FALSE] %>% .[rows,]
     exclude <- geolocatordata()[!vals$keeprows, , drop = FALSE] %>% .[rows,]
 
-    ggplot(keep, 
-           aes(datetime,
-               lightlevel)) + 
-      coord_cartesian(xlim = c(min(geolocatordata()[rows,"datetime"]), max(geolocatordata()[rows,"datetime"])),
-                      ylim = c(min(geolocatordata()[,"lightlevel"]), max(geolocatordata()[,"lightlevel"])))+
-      geom_point()+
-      geom_line()+
+    ggplot() + 
+      geom_point(data = keep, 
+                 mapping = aes(datetime,
+                     lightlevel))+
+      geom_line(data = keep, 
+                mapping = aes(datetime,
+                              lightlevel))+
       geom_point(data = exclude,
+                 mapping = aes(datetime,
+                               lightlevel),
                  shape = 21, 
                  fill = NA, 
                  color = "black",
                  alpha = 0.25)+
       scale_x_datetime()+
+      coord_cartesian(xlim = c(min(geolocatordata()[rows,"datetime"]), max(geolocatordata()[rows,"datetime"])),
+                      ylim = c(min(geolocatordata()[,"lightlevel"]), max(geolocatordata()[,"lightlevel"])))+
       geom_hline(yintercept = input$light_threshold,
                  col = "orange")
-
-    
       
   })
   
@@ -309,24 +305,7 @@ server <- function(input, output, session) {
     vals$keeprows <- xor(vals$keeprows, res$selected_)
   })
   
-  
-  #For drrawing multiple rectangles, but haven't added the code back in on plot.
-  observe({
-    e <- input$plot_brush
-    if (!is.null(e)) {
-      vals2 <- data.frame(xmin = round(e$xmin, 1),
-                         ymin = round(e$ymin, 1), 
-                         xmax = round(e$xmax, 1),
-                         ymax = round(e$ymax, 1))
-      if (identical(vals2,
-                    prev_vals)) return() #We dont want to change anything if the values havent changed.
-      structures$data <- rbind(structures$data,
-                               cbind(data.frame(box_id = nrow(structures$data)+1),
-                                     vals2))
-      prev_vals <<- vals2
-    }
-  })
-  
+
 ###################
 #multiple rectangles
   #from https://stackoverflow.com/questions/46450531/can-users-interactively-draw-rectangles-on-an-image-in-r-via-shiny-app
