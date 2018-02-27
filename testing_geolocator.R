@@ -93,11 +93,9 @@ PABU$datetime <- as.POSIXct(strptime(PABU$V2,
                                      format = "%d/%m/%y %H:%M:%S",
                                      tz = "GMT"))
 
-twl <- twilightCalc(PABU$datetime, 
+twl <- TAGS_twilight_calc(PABU$datetime, 
                     PABU$V4, 
-                    LightThreshold = 1.5,
-                    ask = F,
-                    allTwilights = TRUE)
+                    LightThreshold = 1.5)
 
 all <- twl$allTwilights
 
