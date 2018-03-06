@@ -1,6 +1,7 @@
 library(shiny)
 
 library(DT)
+library(leaflet)
 library(ggplot2)
 library(GeoLight)
 library(lubridate)
@@ -41,32 +42,23 @@ sidebarLayout(
                              h4("Notes"),
                              value = "Any notes here."),#notes
                    br(),
-                   h3("Step 1b. Specify your release location and date"),
-                   numericInput("release_lat", 
-                                h4("Release latitude"), 
+                   h3("Step 1b. Calibration period information"),
+                   numericInput("calib_lon", 
+                                h4("Calibration longitude"), 
                                 value = 0,
                                 step = 0.00001),
-                   numericInput("release_lon", 
-                                h4("Release longitude"), 
+                   numericInput("calib_lat", 
+                                h4("Calibration latitude"), 
                                 value = 0,
                                 step = 0.00001),
-                   dateInput("release_date", 
-                             h4("Release date"), 
+                   dateInput("start_calib_date", 
+                             h4("Calibration start date"), 
                              value = NULL),
-                   br(),
-                   h3("Step 1c. Specify your recapture location and date"),
-                   br(),
-                   numericInput("recap_lat", 
-                                h4("Recapture latitude"), 
-                                value = 0,
-                                step = 0.00001),
-                   numericInput("recap_lon", 
-                                h4("Recapture longitude"), 
-                                value = 0,
-                                step = 0.00001),
-                   dateInput("recap_date", 
-                             h4("Recapture date"), 
+                   dateInput("stop_calib_date", 
+                             h4("Calibration stop date"), 
                              value = NULL),
+                   numericInput("sunangle", "Sun angle", value = 0),
+                   actionButton("calculate", "Calculate sun angle from data"),
                    br(),
                    h3("Step 1d. Upload your dataset"),
                    #submitButton("Upload data")
@@ -335,10 +327,55 @@ server <- function(input, output, session) {
   })
   
   ##################
+  #Calibration/computation of sun elevation angle from calibration data.
+  ##################
+  
+  edited_twilights <- reactive ({
+    edited_twilights <- twilightCalc(geolocatordata_keep()$datetime,
+                                     geolocatordata_keep()$lightlevel,
+                                     ask=F)
+  })
+  
+  calib <- reactive ({
+      calib <- subset(edited_twilights(),
+                      (as.numeric(edited_twilights()$tSecond) < as.numeric(strptime(input$stop_calib_date,
+                                                                                 "%Y-%m-%d %H:%M:%S")))&
+                        (as.numeric(edited_twilights()$tFirst) > as.numeric(strptime(input$start_calib_date,
+                                                                                      "%Y-%m-%d %H:%M:%S")))  
+    
+    )
+    
+    
+  })
+
+   observeEvent(input$calculate, {
+    elev <- getElevation(calib()$tFirst,
+                 calib()$tSecond, 
+                 calib()$type,
+                 known.coord=c(input$calib_lon,
+                               input$calib_lat) )
+    updateNumericInput(session,
+                       "sunangle", 
+                       value = elev)
+  })
+  
 
 
+  ##################
+  #MAP
+  ##################
+  
+  #Get coordinates for all consecutive twilights.
+  #coord <- coord(trans$tFirst,
+  #trans$tSecond,
+  #trans$type,
+  #degElevation=input$sunangle)
+  
+  ##################
   #download code here and in UI from
   #https://stackoverflow.com/questions/41856577/upload-data-change-data-frame-and-download-result-using-shiny-package
+  ##################
+  
   output$downloadData <- downloadHandler(
     
     filename = function() { 
