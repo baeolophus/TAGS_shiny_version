@@ -337,11 +337,10 @@ server <- function(input, output, session) {
   })
   
   calib <- reactive ({
+
       calib <- subset(edited_twilights(),
-                      (as.numeric(edited_twilights()$tSecond) < as.numeric(strptime(input$stop_calib_date,
-                                                                                 "%Y-%m-%d %H:%M:%S")))&
-                        (as.numeric(edited_twilights()$tFirst) > as.numeric(strptime(input$start_calib_date,
-                                                                                      "%Y-%m-%d %H:%M:%S")))  
+                      (as.numeric(as.Date(edited_twilights()$tSecond)) < as.numeric(input$stop_calib_date))&
+                        (as.numeric(as.Date(edited_twilights()$tFirst)) > as.numeric(input$start_calib_date))  
     
     )
     
@@ -356,7 +355,7 @@ server <- function(input, output, session) {
                                input$calib_lat) )
     updateNumericInput(session,
                        "sunangle", 
-                       value = elev)
+                       value = as.numeric(elev))
   })
   
 
