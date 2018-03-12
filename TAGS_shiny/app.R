@@ -101,6 +101,10 @@ pageruiInput('pager',
       actionButton("exclude_reset", "Reset"),
       br(),
 
+
+leafletOutput("mymap"),
+br(),
+
 downloadButton('downloadData', 'Download'),
 br(),
 
@@ -363,12 +367,26 @@ server <- function(input, output, session) {
   ##################
   #MAP
   ##################
-  
-  #Get coordinates for all consecutive twilights.
-  #coord <- coord(trans$tFirst,
-  #trans$tSecond,
-  #trans$type,
-  #degElevation=input$sunangle)
+
+   
+   output$mymap <- renderLeaflet({
+     
+     #Get coordinates for all consecutive twilights.
+     coord <- coord(edited_twilights()$tFirst,
+                    edited_twilights()$tSecond,
+                    edited_twilights()$type,
+                    degElevation=input$sunangle)
+     
+     
+     leaflet() %>%
+       addProviderTiles(providers$Stamen.TonerLite,
+                        options = providerTileOptions(noWrap = TRUE)
+       ) %>%
+       addMarkers(data = coord)
+   })
+   
+
+
   
   ##################
   #download code here and in UI from
