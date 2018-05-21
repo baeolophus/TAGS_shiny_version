@@ -7,9 +7,13 @@ library(GeoLight)
 library(lubridate)
 library(scales)
 
+#Bring in functions to make the main app work.
+#These are the pager for the editting plot 
+#and the adapted twilight calculation function from GeoLight.
 source("global.R")
 
-# Define UI for application
+#Define UI for application
+#This is where you lay out page design and specify buttons, etc.
 ui <- fluidPage(
   titlePanel(
              h1("Totally Awesome Geolocator Service")),
@@ -102,6 +106,10 @@ pageruiInput('pager',
       br(),
 
 
+#This actionButton is linked by its name to an observeEvent in the server function
+#When you press this the mymap object is shown.
+actionButton("update_map", "Update map"),
+
 leafletOutput("mymap"),
 br(),
 
@@ -119,8 +127,11 @@ br(),
 ))
 
 server <- function(input, output, session) {
+  
+  #Make the size of file that you can upload larger than default.
   options(shiny.maxRequestSize=30*1024^2) 
 
+  #List out results that you entered at start of sidebar.
   output$selected_filetype <- renderText({ 
     paste0("Your filetype is ", input$filetype)
   })
@@ -136,8 +147,11 @@ server <- function(input, output, session) {
           "'")
   })
   
+  #Read in a dataset from a file.
   geolocatordata <- reactive({
     
+    #req() ensures that if file hasn't been read in yet,
+    #the rest of the code doesn't crash with errors.
     #https://shiny.rstudio.com/articles/req.html
     req(input$filename)
     inFile <- input$filename
@@ -147,13 +161,16 @@ server <- function(input, output, session) {
     tbl <- read.csv(inFile$datapath,
                     header = FALSE,
                     sep=",")
+    #specifies date and time format.
+    #will need adapting to other files not like my test .lig file.
     tbl$datetime <- as.POSIXct(strptime(tbl$V2,
                                         format = "%d/%m/%y %H:%M:%S",
                                         tz = "GMT"))
     tbl$lightlevel <- tbl$V4
     return(tbl)
   })
-  #dynamic slider based on reactive data
+  
+  #create a user interface dynamic slider based on reactive data
   output$dateslider <- renderUI({
     sliderInput("dateslider",
                 "datetime",
@@ -164,6 +181,7 @@ server <- function(input, output, session) {
                           width = '100%'))
   })
   
+  #Create reactive object that calculates twilights.
   probTwilights <- reactive ({
   twl <- TAGS_twilight_calc(geolocatordata()$datetime, 
                             geolocatordata()$light, 
@@ -173,19 +191,22 @@ server <- function(input, output, session) {
   consecTwilights$timetonext <- difftime(time1 = consecTwilights$tSecond,
                                          time2 = consecTwilights$tFirst,
                                          units = "hours")
+  #flag twilights with < 5 hrs time to next twilight as potential problems.
   probTwilights <- consecTwilights[consecTwilights$timetonext < 5,]
 })
   
+  #use renderPlot function to pass to output "plotall" 
+  #which is placed up in layout.
   output$plotall <- renderPlot({
-
-
 
     ggplot() + 
       geom_line(data = geolocatordata(), 
                 mapping = aes(geolocatordata()$datetime,
                     geolocatordata()$lightlevel))+
+      #draw a line showing where you have set light threshold
       geom_hline(yintercept = input$light_threshold,
                  col = "orange")+
+      #draw red boxes around problem twilights
       geom_rect(data = probTwilights(),
                 mapping = aes(xmin = tFirst,
                     xmax = tSecond,
@@ -199,7 +220,10 @@ server <- function(input, output, session) {
 
   
   #Store excluded rows
-  #with modifications from https://groups.google.com/forum/#!topic/shiny-discuss/YyupMW66HZ8 to adapt to file upload
+  #with modifications from 
+  #https://groups.google.com/forum/#!topic/shiny-discuss/YyupMW66HZ8 
+  #to adapt to file upload
+  
   vals <- reactiveValues( 
     keeprows = NULL
     )
@@ -210,7 +234,7 @@ server <- function(input, output, session) {
   })
   
   #########################
-  #Paging implementation details from 
+  #Paging implementation from 
   #http://oddhypothesis.blogspot.com/2015/10/paging-widget-for-shiny-apps.html
   
   pages = reactive({
@@ -252,11 +276,11 @@ server <- function(input, output, session) {
   
   ########################
   
-  
+  #Plot only the paged/selected rows.
   output$plotselected <- renderPlot({
 
     #First generate true/false list of which rows are plotted via pages().
-    rows = pages()[[input$pager$page_current]]
+    rows <- pages()[[input$pager$page_current]]
     
     # Plot the kept and excluded points as two separate data sets
     keep    <- geolocatordata()[ vals$keeprows, , drop = FALSE] %>% .[rows,]
@@ -277,8 +301,10 @@ server <- function(input, output, session) {
                  color = "black",
                  alpha = 0.25)+
       scale_x_datetime()+
-      coord_cartesian(xlim = c(min(geolocatordata()[rows,"datetime"]), max(geolocatordata()[rows,"datetime"])),
-                      ylim = c(min(geolocatordata()[,"lightlevel"]), max(geolocatordata()[,"lightlevel"])))+
+      coord_cartesian(xlim = c(min(geolocatordata()[rows,"datetime"]),
+                               max(geolocatordata()[rows,"datetime"])),
+                      ylim = c(min(geolocatordata()[,"lightlevel"]),
+                               max(geolocatordata()[,"lightlevel"])))+
       geom_hline(yintercept = input$light_threshold,
                  col = "orange")+
       geom_rect(data = probTwilights(),
@@ -301,7 +327,7 @@ server <- function(input, output, session) {
     vals$keeprows <- xor(vals$keeprows, res$selected_)
   })
   
-  # Toggle points that are brushed, when button is clicked
+  # Toggle points that are selected, when toggle button is clicked
   observeEvent(input$exclude_toggle, {
     res <- brushedPoints(geolocatordata(),
                          input$plotselected_brush,
@@ -318,11 +344,15 @@ server <- function(input, output, session) {
 
 
   ###################
- # output$excludedtbl <- renderDT(geolocatordata()[!vals$keeprows, , drop = FALSE],
-#                                 server = TRUE)
+  #A table to show what values you have excluded
+  #Removing it speeds up running.
+  
+  output$excludedtbl <- renderDT(geolocatordata()[!vals$keeprows, , drop = FALSE],
+                                 server = TRUE)
   
   ##################
   #Adding true/false keep column to new reactive data frame
+  #This column needs to be in the final downloaded dataset.
   ##################
   geolocatordata_keep <- reactive ({
     df <- geolocatordata()
@@ -334,6 +364,10 @@ server <- function(input, output, session) {
   #Calibration/computation of sun elevation angle from calibration data.
   ##################
   
+  #Create a reactive object that is updated
+  #when keep values are altered by clicks.
+  #It is updated and then the calibration object (calib)
+  #is updated too with new values generated by edited_twilights.
   edited_twilights <- reactive ({
     edited_twilights <- twilightCalc(geolocatordata_keep()$datetime,
                                      geolocatordata_keep()$lightlevel,
@@ -351,6 +385,8 @@ server <- function(input, output, session) {
     
   })
 
+  #observeEvent says when you click on "calculate" it gives you a new 
+  #value for sun angle and updates the number input's manually entered entry.
    observeEvent(input$calculate, {
     elev <- getElevation(calib()$tFirst,
                  calib()$tSecond, 
@@ -368,28 +404,37 @@ server <- function(input, output, session) {
   #MAP
   ##################
 
-   
-   output$mymap <- renderLeaflet({
-     
-     #Get coordinates for all consecutive twilights.
-     coord <- coord(edited_twilights()$tFirst,
-                    edited_twilights()$tSecond,
-                    edited_twilights()$type,
-                    degElevation=input$sunangle)
-     
-     
-     leaflet() %>%
-       addProviderTiles(providers$Stamen.TonerLite,
-                        options = providerTileOptions(noWrap = TRUE)
-       ) %>%
-       addMarkers(data = coord)
+   #On clicking the actionButton update_map,
+   #the map is generated or refreshed with new values.
+   #having this isolated in observeEvent keeps it from updating
+   #constantly and using more server time.
+   observeEvent(input$update_map, {
+     output$mymap <- renderLeaflet({
+       
+       #Get coordinates for all consecutive twilights.
+       coord <- coord(edited_twilights()$tFirst,
+                      edited_twilights()$tSecond,
+                      edited_twilights()$type,
+                      degElevation=input$sunangle)
+       
+       #run the leaflet function
+       leaflet() %>%
+         #add map tiles
+         addProviderTiles(providers$Stamen.TonerLite,
+                          options = providerTileOptions(noWrap = TRUE)
+         ) %>%
+         #add the calculated coordinates based on edited twilights
+         addMarkers(data = coord)
+     })
    })
+   
+
    
 
 
   
   ##################
-  #download code here and in UI from
+  #Code to do downloading here and in UI adapted from here:
   #https://stackoverflow.com/questions/41856577/upload-data-change-data-frame-and-download-result-using-shiny-package
   ##################
   
@@ -406,7 +451,7 @@ server <- function(input, output, session) {
     })
 }
 
-# Run the application 
+#Run the application 
 shinyApp(ui = ui, 
          server = server,
          options = list(display.mode = 'showcase'))
