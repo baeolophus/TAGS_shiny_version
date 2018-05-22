@@ -1,5 +1,6 @@
 library(shiny)
 
+#Required libraries other than shiny
 library(DT)
 library(leaflet)
 library(ggplot2)
@@ -7,11 +8,13 @@ library(GeoLight)
 library(lubridate)
 library(scales)
 
+########
 #Bring in functions to make the main app work.
-#These are the pager for the editting plot 
+#These are the pager for the editing plot 
 #and the adapted twilight calculation function from GeoLight.
 source("global.R")
 
+########
 #Define UI for application
 #This is where you lay out page design and specify buttons, etc.
 ui <- fluidPage(
@@ -20,8 +23,12 @@ ui <- fluidPage(
   
 sidebarLayout(
       sidebarPanel(img(src = "TAGS_logo.png"),
-                   br(),
+                   #TAGS logo placed here
+                   
+                   br(), #spacing/line break
                    h3("Step 1a. Select your file"),
+                   
+                   
                    fileInput("filename",
                              label = "Browse for your file"#,
                              #accept = c("text/csv",
@@ -49,8 +56,8 @@ sidebarLayout(
                    h3("Step 1b. Calibration period information"),
                    numericInput("calib_lon", 
                                 h4("Calibration longitude"), 
-                                value = 0,
-                                step = 0.00001),
+                                value = 0, #default value
+                                step = 0.00001), #"steps" with arrow buttons.
                    numericInput("calib_lat", 
                                 h4("Calibration latitude"), 
                                 value = 0,
@@ -61,12 +68,15 @@ sidebarLayout(
                    dateInput("stop_calib_date", 
                              h4("Calibration stop date"), 
                              value = NULL),
+                   #Enter a value for sun angle. 
+                   #Or, this is also where calculated value appears if you press actionButton "calculate"
                    numericInput("sunangle", "Sun angle", value = 0),
                    actionButton("calculate", "Calculate sun angle from data"),
                    br(),
                    h3("Step 1d. Upload your dataset"),
                    #submitButton("Upload data")
                    h3("Step 2. Light threshold entry"),
+                   #Enter a value for light threshold to calculate sunrise/sunset.
                    numericInput("light_threshold", 
                                 h4("Light threshold"), 
                                 value = 5.5,
@@ -79,12 +89,20 @@ sidebarLayout(
        textOutput("selected_name"),
        textOutput("selected_notes"),
       h2("Step 2. Edit and analyze"),
+      
+      #This places a plot in main area that shows all values from 
+      #output$plotall (generated in server section)
       plotOutput("plotall",
                  height = "150px"),
-#Input slider based on reactive dataframe.
+     
+      
+##############################
+      #PROBABLY DELETE NOT USING ANYMORE
+      #Input slider based on reactive dataframe.
 #https://stackoverflow.com/questions/18700589/interactive-reactive-change-of-min-max-values-of-sliderinput
-      uiOutput("dateslider"),
-
+#      uiOutput("dateslider"),
+##############################
+#plot a subset of the data that is zoomed in enough to see and edit individual points.
       plotOutput("plotselected",
                  click = "plotselected_click",
                  brush = brushOpts(
@@ -106,23 +124,31 @@ verbatimTextOutput('debug'),
 pageruiInput('pager',
              page_current = 1),
 
+br(),
+#Show table of excluded items based on selections in plotselected.
+DTOutput('excludedtbl'),
 
+
+img(src = "step2.png"),
+
+h2("Step 3. View and download results"),
+img(src = "step3.png"),
 #This actionButton is linked by its name to an observeEvent in the server function
 #When you press this the mymap object is shown.
 actionButton("update_map", "Update map"),
 
+#Map showing calculated coordinates from sunrise/sunset times.
 leafletOutput("mymap"),
 br(),
 
+#Button to download data.
 downloadButton('downloadData', 'Download'),
-br(),
+br()
 
-br(),
 
-      DTOutput('excludedtbl'),
-        img(src = "step2.png"),
-        h2("Step 3. View and download results"),
-        img(src = "step3.png")
+
+
+
       )
 
 ))
