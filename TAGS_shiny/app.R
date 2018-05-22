@@ -125,6 +125,14 @@ pageruiInput('pager',
              page_current = 1),
 
 br(),
+#############
+#Attempting to page to next and previous problems
+#the first argument in each refers to the observeEvent in server function that will locate the next
+#problematic twilight
+actionButton("findNextProblem",
+             "Next problem twilight"),
+
+#############
 #Show table of excluded items based on selections in plotselected.
 DTOutput('excludedtbl'),
 
@@ -292,7 +300,6 @@ server <- function(input, output, session) {
       if (input$pager$page_current > pages_total) {
         page_current = pages_total
       }
-      
       updatePageruiInput(
         session, 'pager',
         page_current = page_current,
@@ -300,7 +307,32 @@ server <- function(input, output, session) {
       )
     }
   )
-  
+  #############
+  #Attempting to page to next and previous problems
+  #the first argument in each refers to the observeEvent in server function
+  #that will locate the next
+  #problematic twilight
+
+  observeEvent(
+    eventExpr = {
+      c(input$findNextProblem)
+    },
+    handlerExpr = {
+      
+      pages_total = ceiling(nrow(geolocatordata()) / input$num_rows_per_page)
+      
+      page_current = input$pager$page_current
+      if (input$pager$page_current > pages_total) {
+        page_current = pages_total
+      }
+      updatePageruiInput(
+        session, 'pager',
+        page_current = page_current,
+        pages_total = pages_total
+      )
+    }
+  ),
+  #############
   ########################
   
   #Plot only the paged/selected rows.
