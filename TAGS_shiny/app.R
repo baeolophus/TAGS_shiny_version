@@ -91,6 +91,11 @@ sidebarLayout(
                    id = "plotselected_brush"
                  )
       ),
+#buttons to toggle editing plot points selected by a box.
+actionButton("exclude_toggle", "Toggle points"),
+actionButton("exclude_reset", "Reset"),
+br(),
+
 ########
 #pager for zoomed data
 numericInput('num_rows_per_page', 
@@ -100,10 +105,6 @@ numericInput('num_rows_per_page',
 verbatimTextOutput('debug'),
 pageruiInput('pager',
              page_current = 1),
-########
-      actionButton("exclude_toggle", "Toggle points"),
-      actionButton("exclude_reset", "Reset"),
-      br(),
 
 
 #This actionButton is linked by its name to an observeEvent in the server function
