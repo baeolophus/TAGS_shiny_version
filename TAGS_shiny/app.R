@@ -97,9 +97,19 @@ sidebarLayout(
      
       
 ##############################
-      #Input slider based on reactive dataframe.
+#Input slider based on reactive dataframe.
 #https://stackoverflow.com/questions/18700589/interactive-reactive-change-of-min-max-values-of-sliderinput
-      uiOutput("dateslider"),
+
+uiOutput("dateslider"),
+
+actionButton("click_Prev", "Previous window"),
+actionButton("click_Next", "Next window"),
+actionButton("click_PrevProb", "Previous problem"),
+actionButton("click_NextProb", "Next problem"),
+numericInput("time_window", "Editing window",
+             value = 172800), #Default shows 2 days in seconds for posixct
+numericInput("overlap_window", "What overlap with previous window?",
+             value = 3600), #Default shows 1 hour in seconds
 ##############################
 #plot a subset of the data that is zoomed in enough to see and edit individual points.
       plotOutput("plotselected",
@@ -113,36 +123,16 @@ actionButton("exclude_toggle", "Toggle points"),
 actionButton("exclude_reset", "Reset"),
 br(),
 
-########
-#pager for zoomed data
-numericInput('num_rows_per_page', 
-             'Rows Per Page',
-             value = 100,
-             min = 1),
-verbatimTextOutput('debug'),
-pageruiInput('pager',
-             page_current = 1),
-
-br(),
-#############
-#Attempting to page to next and previous problems
-#the first argument in each refers to the observeEvent in server function that will locate the next
-#problematic twilight
-actionButton("findNextProblem",
-             "Next problem twilight"),
 
 #############
 #Show table of excluded items based on selections in plotselected.
 DTOutput('excludedtbl'),
 
-
-img(src = "step2.png"),
-
 h2("Step 3. View and download results"),
 img(src = "step3.png"),
 #This actionButton is linked by its name to an observeEvent in the server function
 #When you press this the mymap object is shown.
-actionButton("update_map", "Update map"),
+actionButton("update_map", "Generate map"),
 
 #Map showing calculated coordinates from sunrise/sunset times.
 leafletOutput("mymap"),
@@ -150,6 +140,8 @@ br(),
 
 #Button to download data.
 downloadButton('downloadData', 'Download'),
+#Add one for coordinates only
+#Add one for edited twilights only
 br()
 
 
@@ -210,9 +202,8 @@ server <- function(input, output, session) {
                 "datetime",
                 min = min(geolocatordata()$datetime),
                 max = max(geolocatordata()$datetime),
-                value = c(min(geolocatordata()$datetime),
-                          min(geolocatordata()$datetime)+days(2), #This sets the initial range to first two days of the dataset
-                          width = '100%'))
+                value = min(geolocatordata()$datetime), #This sets the initial range to first two days of the dataset
+                          width = '100%')
   })
   
   #Create reactive object that calculates twilights.
@@ -268,81 +259,21 @@ server <- function(input, output, session) {
   })
   
   #########################
-  #Paging implementation from 
-  #http://oddhypothesis.blogspot.com/2015/10/paging-widget-for-shiny-apps.html
+  window_x_min <- reactiveValues()
   
-  pages = reactive({
-    nrow_data = nrow(geolocatordata())
-    # rows_per_page = ceiling(nrow_data / input$pager$pages_total)
-    
-    row_starts = seq(1, nrow_data, by = input$num_rows_per_page)
-    row_stops  = c(row_starts[-1] - 1, nrow_data)
-    
-    page_rows = mapply(`:`, row_starts, row_stops, SIMPLIFY=F)
-    
-    return(page_rows)
+  observe({
+    window_x_min$x <- input$dateslider
   })
   
-  output$debug = renderPrint({
-    str(input$pager)
-  })
-
-  observeEvent(
-    eventExpr = {
-      c(input$num_rows_per_page, input$sel_dataset)
-    },
-    handlerExpr = {
-      
-      pages_total = ceiling(nrow(geolocatordata()) / input$num_rows_per_page)
-      
-      page_current = input$pager$page_current
-      if (input$pager$page_current > pages_total) {
-        page_current = pages_total
-      }
-      updatePageruiInput(
-        session, 'pager',
-        page_current = page_current,
-        pages_total = pages_total
-      )
-    }
-  )
-  #############
-  #Attempting to page to next and previous problems
-  #the first argument in each refers to the observeEvent in server function
-  #that will locate the next
-  #problematic twilight
-
-  observeEvent(
-    eventExpr = {
-      c(input$findNextProblem)
-    },
-    handlerExpr = {
-      
-      pages_total = ceiling(nrow(geolocatordata()) / input$num_rows_per_page)
-      
-      page_current = input$pager$page_current
-      if (input$pager$page_current > pages_total) {
-        page_current = pages_total
-      }
-      updatePageruiInput(
-        session, 'pager',
-        page_current = page_current,
-        pages_total = pages_total
-      )
-    }
-  ),
-  #############
   ########################
   
   #Plot only the paged/selected rows.
   output$plotselected <- renderPlot({
 
-    #First generate true/false list of which rows are plotted via pages().
-    rows <- pages()[[input$pager$page_current]]
     
     # Plot the kept and excluded points as two separate data sets
-    keep    <- geolocatordata()[ vals$keeprows, , drop = FALSE] %>% .[rows,]
-    exclude <- geolocatordata()[!vals$keeprows, , drop = FALSE] %>% .[rows,]
+    keep    <- geolocatordata()[ vals$keeprows, , drop = FALSE]
+    exclude <- geolocatordata()[!vals$keeprows, , drop = FALSE]
 
     ggplot() + 
       geom_point(data = keep, 
@@ -359,8 +290,8 @@ server <- function(input, output, session) {
                  color = "black",
                  alpha = 0.25)+
       scale_x_datetime()+
-      coord_cartesian(xlim = c(min(geolocatordata()[rows,"datetime"]),
-                               max(geolocatordata()[rows,"datetime"])),
+      coord_cartesian(xlim = c(window_x_min$x,
+                               window_x_min$x+input$time_window),
                       ylim = c(min(geolocatordata()[,"lightlevel"]),
                                max(geolocatordata()[,"lightlevel"])))+
       geom_hline(yintercept = input$light_threshold,
@@ -394,11 +325,58 @@ server <- function(input, output, session) {
     vals$keeprows <- xor(vals$keeprows, res$selected_)
   })
   
-
-###################
-#multiple rectangles
-  #from https://stackoverflow.com/questions/46450531/can-users-interactively-draw-rectangles-on-an-image-in-r-via-shiny-app
+##################
+  #Buttons for moving forward and backwards in the dataset
   
+  observeEvent(input$dateslider,
+               window_x_min$x <- input$dateslider)
+  observeEvent(input$click_Next,
+               handlerExpr = {
+                 window_x_min$x <- window_x_min$x + input$time_window - input$overlap_window
+                 updateSliderInput(session,
+                                   "dateslider",
+                                   value = window_x_min$x)
+               })
+  observeEvent(input$click_Prev,
+               handlerExpr = {
+                 window_x_min$x <-  window_x_min$x - (input$time_window - input$overlap_window)
+                 updateSliderInput(session,
+                                   "dateslider",
+                                   value = window_x_min$x)
+               })
+  observeEvent(input$click_NextProb,
+               handlerExpr = {
+                 if (window_x_min$x>=max(probTwilights()$tSecond))
+                   #if the next problem value is less than the maximum of the dataset
+                 {
+                   showNotification(ui = "No problems detected after this point",
+                                    type = "warning",
+                                    duration = NULL)
+                 }
+                 else
+                   #then update the x value to the beginning
+                 {window_x_min$x <- probTwilights()$tFirst[probTwilights()$tFirst>window_x_min$x][1]
+                 updateSliderInput(session,
+                                   "dateslider",
+                                   value = window_x_min$x)}
+                 
+               })
+  observeEvent(input$click_PrevProb,
+               handlerExpr = {
+                 if (window_x_min$x<=min(probTwilights()$tFirst))
+                   #if the next problem value is less than the minimum of the dataset
+                 {
+                   showNotification(ui = "No problems detected before this point",
+                                    type = "warning",
+                                    duration = NULL)
+                 }
+                 else
+                   #then update the x value to the beginning
+                 {window_x_min$x <- probTwilights()$tFirst[probTwilights()$tFirst<window_x_min$x][1]
+                 updateSliderInput(session,
+                                   "dateslider",
+                                   value = window_x_min$x)}
+               })
 
 
   ###################
