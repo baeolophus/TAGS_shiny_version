@@ -97,10 +97,9 @@ sidebarLayout(
      
       
 ##############################
-      #PROBABLY DELETE NOT USING ANYMORE
       #Input slider based on reactive dataframe.
 #https://stackoverflow.com/questions/18700589/interactive-reactive-change-of-min-max-values-of-sliderinput
-#      uiOutput("dateslider"),
+      uiOutput("dateslider"),
 ##############################
 #plot a subset of the data that is zoomed in enough to see and edit individual points.
       plotOutput("plotselected",
