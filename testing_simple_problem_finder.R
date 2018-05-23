@@ -3,11 +3,13 @@ library(Cairo)   # For nicer ggplot2 output when deployed on Linux
 
 ui <- fluidPage(
   fluidRow(
-    actionButton("click_Next", "Next 1 unit"),
-    
-    actionButton("click_Prev", "Prev 1 unit"),
-    
+    actionButton("click_Prev", "Previous window"),
+    actionButton("click_Next", "Next window"),
+    actionButton("click_PrevProb", "Previous problem"),
     actionButton("click_NextProb", "Next problem"),
+    uiOutput("dateslider"),
+    numericInput("time_window", "Editing window", value = 1),
+    numericInput("overlap_window", "What overlap with previous window?", value = 0),
     column(width = 8, class = "well",
            h4("Left plot controls right plot"),
            fluidRow(
@@ -28,13 +30,26 @@ ui <- fluidPage(
   )
 )
 
-server <- function(input, output) {
+server <- function(input, output, session) {
   
 
   
   # -------------------------------------------------------------------
   # Linked plots (middle and right)
-  ranges2 <- reactiveValues(x = NULL, y = NULL)
+  #create a user interface dynamic slider based on reactive data
+  
+  window_x_min <- reactiveValues(x = min(mtcars$wt))
+  
+  output$dateslider <- renderUI({
+    sliderInput("dateslider",
+                "Window start",
+                min = min(mtcars$wt),
+                max = max(mtcars$wt),
+                value = window_x_min$x, #This sets the initial value ONLY
+                #to first timestamp of the dataset
+                width = '100%')
+  })
+
   
   output$plot2 <- renderPlot({
     ggplot(mtcars, aes(wt, mpg)) +
@@ -44,49 +59,64 @@ server <- function(input, output) {
   output$plot3 <- renderPlot({
     ggplot(mtcars, aes(wt, mpg)) +
       geom_point() +
-      coord_cartesian(xlim = ranges2$x,
-                      ylim = ranges2$y,
+      coord_cartesian(xlim = c(window_x_min$x,
+                               window_x_min$x+input$time_window),
                       expand = FALSE)
   })
   
-  brush <- reactive({brush <- input$plot2_brush})
-  
-  # When a double-click happens, check if there's a brush on the plot.
-  # If so, zoom to the brush bounds; if not, reset the zoom.
-  observe({
-  #  brush <- input$plot2_brush
-    if (!is.null(brush())) {
-      ranges2$x <- c(brush()$xmin, brush()$xmax)
-      ranges2$y <- c(brush()$ymin, brush()$ymax)
-      
-    } else {
-      ranges2$x <- NULL
-      ranges2$y <- NULL
-    }
-  })
+  observeEvent(input$dateslider,
+               window_x_min$x <- input$dateslider)
   observeEvent(input$click_Next,
                handlerExpr = {
-                 ranges2$x <- ranges2$x + 0.5 #So this should be windowsize - overlap
+                 window_x_min$x <- window_x_min$x + input$time_window - input$overlap_window
+                 updateSliderInput(session,
+                                   "dateslider",
+                                   value = window_x_min$x)
                })
   observeEvent(input$click_Prev,
                handlerExpr = {
-                 ranges2$x <- ranges2$x - 1 #ditto
+                 window_x_min$x <-  window_x_min$x - (input$time_window - input$overlap_window)
+                 updateSliderInput(session,
+                                   "dateslider",
+                                   value = window_x_min$x)
                })
   observeEvent(input$click_NextProb,
                handlerExpr = {
-                 ranges2$x <- c(problem_values[problem_values>max(ranges2$x)][1],
-                                problem_values[problem_values>max(ranges2$x)][1]+1) #this number is the width of the window
-                 
+                 if (window_x_min$x>=max(problem_values))
+                   #if the next problem value is less than the minimum of the dataset
+                 {
+                 showNotification(ui = "No problems detected after this point",
+                                  type = "warning",
+                                  duration = NULL)
+                   }
+                 else
+                   #then update the x value to the beginning
+                 {window_x_min$x <- problem_values[problem_values>window_x_min$x][1]
+                 updateSliderInput(session,
+                                   "dateslider",
+                                   value = window_x_min$x)}
 
-                 #need to add what happens when you get to end of problems.
-                 #eventually could add a "fixed problem" column to skip.
+               })
+  observeEvent(input$click_PrevProb,
+               handlerExpr = {
+                 if (window_x_min$x<=min(problem_values))
+                   #if the next problem value is less than the minimum of the dataset
+                 {
+                   showNotification(ui = "No problems detected before this point",
+                                    type = "warning",
+                                    duration = NULL)
+                   }
+                   else
+                   #then update the x value to the beginning
+                   {window_x_min$x <- problem_values[problem_values<window_x_min$x][1]
+                   updateSliderInput(session,
+                                     "dateslider",
+                                     value = window_x_min$x)}
                })
 }
 
-x <- c(1,2)
-problem_values <- c(1,2.4,5)
-max(x)
-problem_values[problem_values>max(x)][1]
-which.min(abs(x-problem_values))
+problem_values <- c(2.4,5)
+
+problem_values < 1
 
 shinyApp(ui, server)
