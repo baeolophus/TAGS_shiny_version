@@ -2,9 +2,10 @@ library(shiny)
 
 #Required libraries other than shiny
 library(DT)
-library(leaflet)
-library(ggplot2)
+library(FLightR)
 library(GeoLight)
+library(ggplot2)
+library(leaflet)
 library(lubridate)
 library(scales)
 
@@ -206,9 +207,23 @@ server <- function(input, output, session) {
                           width = '100%')
   })
   
-  #Create reactive object that calculates twilights.
+  #########################
+  #Set the value of the left side of the editing window as a reactive value that can change
+  #with the value of the date slider.  This also allows you to change the window
+  #location with the next/prev buttons.
+  window_x_min <- reactiveValues()
+  
+  observe({
+    window_x_min$x <- input$dateslider #starts at the value of the date slider which starts at the minimum x value of dataset.
+  })
+  #########################
+  #Create reactive object that calculates problem twilights.
+  #THIS SECTION IS WHERE YOU WOULD PUT NEW METHODS FOR CALCULATING PROBLEM REGIONS.
   probTwilights <- reactive ({
-  twl <- TAGS_twilight_calc(geolocatordata()$datetime, 
+  
+    #this is a method for calculating problems that uses
+    #GeoLight's twilight finder modified to remove some options.
+    twl <- TAGS_twilight_calc(geolocatordata()$datetime, 
                             geolocatordata()$light, 
                             LightThreshold = input$light_threshold)
   
@@ -216,12 +231,16 @@ server <- function(input, output, session) {
   consecTwilights$timetonext <- difftime(time1 = consecTwilights$tSecond,
                                          time2 = consecTwilights$tFirst,
                                          units = "hours")
-  #flag twilights with < 5 hrs time to next twilight as potential problems.
+  #Then we flag twilights with < 5 hrs time to next twilight as potential problems.
   probTwilights <- consecTwilights[consecTwilights$timetonext < 5,]
+  #This final object is the one that is passed outside as the reactive object used later.
+  #So if you do additional methods or change it, make sure the last object is the one that contains
+  #problem twilights with columns tFirst (POSIXct), tSecond (POSIXct), and type (num)
 })
   
+  #########################  
   #use renderPlot function to pass to output "plotall" 
-  #which is placed up in layout.
+  #which is placed up in layout.  This shows the whole dataset and all problem regions.
   output$plotall <- renderPlot({
 
     ggplot() + 
@@ -239,6 +258,15 @@ server <- function(input, output, session) {
                     ymax = Inf),
                 col = "red",
                 fill = "red",
+                alpha = 0.5)+
+      #draw pale gray box over editing window
+      geom_rect(
+                mapping = aes(xmin = window_x_min$x,
+                              xmax = window_x_min$x+input$time_window,
+                              ymin = -Inf,
+                              ymax = Inf),
+                col = "gray",
+                fill = "gray",
                 alpha = 0.5)
   })
   
@@ -257,14 +285,7 @@ server <- function(input, output, session) {
     vals$keeprows <- rep(TRUE,
                          nrow(geolocatordata()))
   })
-  
-  #########################
-  window_x_min <- reactiveValues()
-  
-  observe({
-    window_x_min$x <- input$dateslider
-  })
-  
+
   ########################
   
   #Plot only the paged/selected rows.
