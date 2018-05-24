@@ -1,6 +1,7 @@
 library(shiny)
 
 #Required libraries other than shiny
+library(dplyr)
 library(DT)
 library(FLightR)
 library(GeoLight)
@@ -28,22 +29,23 @@ sidebarLayout(
                    
                    br(), #spacing/line break
                    h3("Step 1a. Select your file"),
-                   
-                   
-                   fileInput("filename",
-                             label = "Browse for your file"#,
-                             #accept = c("text/csv",
-                             #           "text/comma-separated-values,text/plain",
-                            #            ".csv",
-                            #            ".lig",
-                             #           ".lux")
-                            ),
                    radioButtons("filetype", 
                                 label = "Select your filetype",
-                                choices = list(".lux", 
+                                choices = list(".csv (generic data)",
                                                ".lig",
-                                               "generic text"),
-                                selected = "generic text"),
+                                               ".lux"
+                                ),
+                                selected = ".csv (generic data)"),
+                   
+                   fileInput("filename",
+                             label = "Browse for your file",
+                             accept = c("text/csv",
+                                        "text/comma-separated-values,text/plain",
+                                        ".csv",
+                                        ".lig",
+                                        ".lux")
+                            ),
+
                    textInput("name",
                              h4("Name"),
                              placeholder = "PABU_123"),  #name
@@ -84,11 +86,12 @@ sidebarLayout(
                                 step = 0.1)
                    ),
       mainPanel(
-       h2("Step 1. Upload your data"),
+       h2("Step 1. About your data"),
        textOutput("selected_filetype"),
        textOutput("selected_species"),
        textOutput("selected_name"),
        textOutput("selected_notes"),
+       br(),
       h2("Step 2. Edit and analyze"),
       
       #This places a plot in main area that shows all values from 
@@ -120,8 +123,8 @@ numericInput("overlap_window", "What overlap with previous window?",
                  )
       ),
 #buttons to toggle editing plot points selected by a box.
-actionButton("exclude_toggle", "Toggle points"),
-actionButton("exclude_reset", "Reset"),
+actionButton("exclude_toggle", "Toggle currently selected points"),
+actionButton("exclude_reset", "Reset ALL EXCLUDED POINTS"),
 br(),
 
 
@@ -173,7 +176,8 @@ server <- function(input, output, session) {
           input$notes,
           "'")
   })
-  
+
+  #########################
   #Read in a dataset from a file.
   geolocatordata <- reactive({
     
@@ -182,36 +186,81 @@ server <- function(input, output, session) {
     #https://shiny.rstudio.com/articles/req.html
     req(input$filename)
     inFile <- input$filename
-    if (is.null(inFile))
-      return(NULL)
     
-    tbl <- read.csv(inFile$datapath,
-                    header = FALSE,
-                    sep=",")
-    #specifies date and time format.
-    #will need adapting to other files not like my test .lig file.
-    tbl$datetime <- as.POSIXct(strptime(tbl$V2,
-                                        format = "%d/%m/%y %H:%M:%S",
-                                        tz = "GMT"))
-    tbl$lightlevel <- tbl$V4
-    return(tbl)
-  })
+    #Nesting ifelse shows what to do if inFile is null (no entry)
+    #and what to do for each input radio button type.
+    if (is.null(inFile)) {return(NULL)} else
+    {
+      if (input$filetype == ".lig") {
+        
+        tbl <- read.csv(inFile$datapath,
+                        header = FALSE,
+                        sep=",")
+        #specifies date and time format.
+        tbl$datetime <- as.POSIXct(strptime(tbl$V2,
+                                            format = "%d/%m/%y %H:%M:%S",
+                                            tz = "GMT"))
+        tbl$lightlevel <- tbl$V4
+        return(tbl)
+        
+      } else 
+        {
+          if (input$filetype == ".lux") {
+        
+        tbl <- read.csv(inFile$datapath,
+                        header = FALSE,
+                        sep="\t", #.lux is tab separated not comma
+                        skip = 20)
+        
+        #names headers
+        names(tbl) <- c("datetime", "lightlevel")
+        #specifies date and time format.
+        tbl$datetime <- as.POSIXct(strptime(tbl$datetime,
+                                            format = "%m/%d/%Y %H:%M:%S",
+                                            tz = "GMT"))
+        return(tbl)
+        
+      } else {
+        #all else should be .csv files.
+        tbl <- read.csv(inFile$datapath,
+                        header = TRUE,
+                        sep=",")
+        #renames headers if incorrect
+        names(tbl) <- c("datetime", "lightlevel")
+        #specifies date and time format.
+        tbl$datetime <- as.POSIXct(strptime(tbl$datetime,
+                                            format = "%Y-%m-%d %H:%M:%S",
+                                            tz = "GMT"))
+        #Should add error notifications here for if something goes wrong in conversions.
+        #use showNotification()
+        return(tbl)
+        }
+      }
+    }
+  }) 
+      
+      
+      
+      
+      
   
+#########################
   #create a user interface dynamic slider based on reactive data
   output$dateslider <- renderUI({
     sliderInput("dateslider",
                 "datetime",
-                min = min(geolocatordata()$datetime),
-                max = max(geolocatordata()$datetime),
-                value = min(geolocatordata()$datetime), #This sets the initial range to first two days of the dataset
+                min = min(geolocatordata()$datetime, na.rm = TRUE),
+                max = max(geolocatordata()$datetime, na.rm = TRUE),
+                value = min(geolocatordata()$datetime, na.rm = TRUE), #This sets the initial range to first two days of the dataset
                           width = '100%')
   })
   
-  #########################
-  #Set the value of the left side of the editing window as a reactive value that can change
+#########################
+  #Set the value of the left side of the editing window as a reactive that can change
   #with the value of the date slider.  This also allows you to change the window
   #location with the next/prev buttons.
   window_x_min <- reactiveValues()
+  window_x_min$x <- NULL
   
   observe({
     window_x_min$x <- input$dateslider #starts at the value of the date slider which starts at the minimum x value of dataset.
@@ -259,15 +308,8 @@ server <- function(input, output, session) {
                 col = "red",
                 fill = "red",
                 alpha = 0.5)+
-      #draw pale gray box over editing window
-      geom_rect(
-                mapping = aes(xmin = window_x_min$x,
-                              xmax = window_x_min$x+input$time_window,
-                              ymin = -Inf,
-                              ymax = Inf),
-                col = "gray",
-                fill = "gray",
-                alpha = 0.5)
+      labs(x = "datetime", 
+           y = "lightlevel")
   })
   
 
@@ -293,8 +335,8 @@ server <- function(input, output, session) {
 
     
     # Plot the kept and excluded points as two separate data sets
-    keep    <- geolocatordata()[ vals$keeprows, , drop = FALSE]
-    exclude <- geolocatordata()[!vals$keeprows, , drop = FALSE]
+    keep    <- geolocatordata()[ vals$keeprows == TRUE, , drop = FALSE]
+    exclude <- geolocatordata()[ vals$keeprows == FALSE, , drop = FALSE]
 
     ggplot() + 
       geom_point(data = keep, 
@@ -311,10 +353,10 @@ server <- function(input, output, session) {
                  color = "black",
                  alpha = 0.25)+
       scale_x_datetime()+
-      coord_cartesian(xlim = c(window_x_min$x,
-                               window_x_min$x+input$time_window),
-                      ylim = c(min(geolocatordata()[,"lightlevel"]),
-                               max(geolocatordata()[,"lightlevel"])))+
+      coord_cartesian(xlim = c(input$dateslider,
+                               input$dateslider+input$time_window),
+                      ylim = c(min(geolocatordata()[,"lightlevel"], na.rm = TRUE),
+                               max(geolocatordata()[,"lightlevel"], na.rm = TRUE)))+
       geom_hline(yintercept = input$light_threshold,
                  col = "orange")+
       geom_rect(data = probTwilights(),
@@ -384,7 +426,7 @@ server <- function(input, output, session) {
                })
   observeEvent(input$click_PrevProb,
                handlerExpr = {
-                 if (window_x_min$x<=min(probTwilights()$tFirst))
+                 if (window_x_min$x<=min(probTwilights()$tFirst, na.rm = TRUE))
                    #if the next problem value is less than the minimum of the dataset
                  {
                    showNotification(ui = "No problems detected before this point",
@@ -392,7 +434,7 @@ server <- function(input, output, session) {
                                     duration = NULL)
                  }
                  else
-                   #then update the x value to the beginning
+                   #then update the x value to the previous problem
                  {window_x_min$x <- probTwilights()$tFirst[probTwilights()$tFirst<window_x_min$x][1]
                  updateSliderInput(session,
                                    "dateslider",
@@ -404,7 +446,9 @@ server <- function(input, output, session) {
   #A table to show what values you have excluded
   #Removing it speeds up running.
   
-  output$excludedtbl <- renderDT(geolocatordata()[!vals$keeprows, , drop = FALSE],
+  output$excludedtbl <- renderDT(geolocatordata()[vals$keeprows == FALSE, 
+                                                  c("datetime", "lightlevel"),
+                                                  drop = FALSE],
                                  server = TRUE)
   
   ##################
@@ -445,16 +489,17 @@ server <- function(input, output, session) {
   #observeEvent says when you click on "calculate" it gives you a new 
   #value for sun angle and updates the number input's manually entered entry.
    observeEvent(input$calculate, {
-    elev <- getElevation(calib()$tFirst,
+     elev <- NA
+     elev <- getElevation(calib()$tFirst,
                  calib()$tSecond, 
                  calib()$type,
                  known.coord=c(input$calib_lon,
-                               input$calib_lat) )
+                               input$calib_lat) )[[1]] #the [[1]] is necessary to pull out just the median sun angle and not the rest of the shape, etc.
     updateNumericInput(session,
                        "sunangle", 
                        value = as.numeric(elev))
   })
-  
+  ## Warning: Error in $<-.data.frame: replacement has 1 row, data has 0
 
 
   ##################
@@ -512,4 +557,5 @@ server <- function(input, output, session) {
 shinyApp(ui = ui, 
          server = server,
          options = list(display.mode = 'showcase'))
+
 
