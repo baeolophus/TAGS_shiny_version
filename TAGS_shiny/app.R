@@ -291,7 +291,6 @@ server <- function(input, output, session) {
   #use renderPlot function to pass to output "plotall" 
   #which is placed up in layout.  This shows the whole dataset and all problem regions.
   output$plotall <- renderPlot({
-
     ggplot() + 
       geom_line(data = geolocatordata(), 
                 mapping = aes(geolocatordata()$datetime,
@@ -309,7 +308,16 @@ server <- function(input, output, session) {
                 fill = "red",
                 alpha = 0.5)+
       labs(x = "datetime", 
-           y = "lightlevel")
+           y = "lightlevel")+
+      #draw pale gray box over editing window
+      annotate("rect",
+               xmin = window_x_min$x,
+               xmax = window_x_min$x+input$time_window,
+               ymin = -Inf,
+               ymax = Inf,
+               col = "gray",
+               fill = "gray",
+               alpha = 0.5)
   })
   
 
