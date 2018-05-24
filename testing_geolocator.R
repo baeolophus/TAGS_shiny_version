@@ -54,6 +54,10 @@ twl <- twilightCalc(hoopoe1$datetime,
                     ask = F,
                     allTwilights = TRUE)
 head(twl)
+FLightR::GeoLight2TAGS(hoopoe1,
+                       twl$consecTwilights,
+                       1.5)
+GeoLight2TAGS
 
 source("TAGS_shiny/source_TAGS_twilightCalc.R")
 twl <- TAGS_twilight_calc(hoopoe1$datetime, 
