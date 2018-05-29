@@ -133,8 +133,8 @@ br(),
 DTOutput('excludedtbl'),
 
 h2("Step 3. View and download results"),
-img(src = "step3.png"),
-#This actionButton is linked by its name to an observeEvent in the server function
+
+#This actionButton is linked by its name (update_map) to an observeEvent in the server function
 #When you press this the mymap object is shown.
 actionButton("update_map", "Generate map"),
 
@@ -143,11 +143,13 @@ leafletOutput("mymap"),
 br(),
 
 #Button to download data.
-downloadButton('downloadData', 'Download'),
-#Add one for coordinates only
-#Add one for edited twilights only
-br()
+downloadButton('downloadData', 'Download TAGS format (original data with edits and twilights)'),
 
+#Add one for coordinates only
+downloadButton('downloadDataCoord', 'Download edited coordinates only'),
+
+#Add one for edited twilights only
+downloadButton('downloadDataTwilights', 'Download edited twilights only')
 
 
 
@@ -399,8 +401,10 @@ server <- function(input, output, session) {
 ##################
   #Buttons for moving forward and backwards in the dataset
   
+  #Watches for the dateslider's value (which defaults to minimum of dataset) and starts the editing window there
   observeEvent(input$dateslider,
                window_x_min$x <- input$dateslider)
+  #When you click next, it goes to the next window's x coordinate minus any overlap with previous window.
   observeEvent(input$click_Next,
                handlerExpr = {
                  window_x_min$x <- window_x_min$x + input$time_window - input$overlap_window
@@ -408,6 +412,7 @@ server <- function(input, output, session) {
                                    "dateslider",
                                    value = window_x_min$x)
                })
+  #Same for previous except it goes back in time.
   observeEvent(input$click_Prev,
                handlerExpr = {
                  window_x_min$x <-  window_x_min$x - (input$time_window - input$overlap_window)
@@ -415,17 +420,21 @@ server <- function(input, output, session) {
                                    "dateslider",
                                    value = window_x_min$x)
                })
+  #Waits for click on Next Problem button
   observeEvent(input$click_NextProb,
                handlerExpr = {
                  if (window_x_min$x>=max(probTwilights()$tSecond))
-                   #if the next problem value is less than the maximum of the dataset
+                   #if current value of x axis is equal to or greater than the
+                   #the maximum x axis location of any problem, then it does not move and
+                   #shows a notification alerting the user.
                  {
                    showNotification(ui = "No problems detected after this point",
                                     type = "warning",
                                     duration = NULL)
                  }
                  else
-                   #then update the x value to the beginning
+                   #if first of the next problem values is greater than the current location,
+                   #then update the x value to the beginning of that region
                  {window_x_min$x <- probTwilights()$tFirst[probTwilights()$tFirst>window_x_min$x][1]
                  updateSliderInput(session,
                                    "dateslider",
@@ -435,14 +444,17 @@ server <- function(input, output, session) {
   observeEvent(input$click_PrevProb,
                handlerExpr = {
                  if (window_x_min$x<=min(probTwilights()$tFirst, na.rm = TRUE))
-                   #if the next problem value is less than the minimum of the dataset
+                   #if current value of x axis is equal to or less than the
+                   #the minimum x axis location of any problem, then it does not move and
+                   #shows a notification alerting the user.
                  {
                    showNotification(ui = "No problems detected before this point",
                                     type = "warning",
                                     duration = NULL)
                  }
                  else
-                   #then update the x value to the previous problem
+                   #if first of the previous problem values is less than the current location,
+                   #then update the x value to the beginning of that region
                  {window_x_min$x <- probTwilights()$tFirst[probTwilights()$tFirst<window_x_min$x][1]
                  updateSliderInput(session,
                                    "dateslider",
@@ -452,7 +464,7 @@ server <- function(input, output, session) {
 
   ###################
   #A table to show what values you have excluded
-  #Removing it speeds up running.
+  #(Removing it speeds up rendering the page.)
   
   output$excludedtbl <- renderDT(geolocatordata()[vals$keeprows == FALSE, 
                                                   c("datetime", "lightlevel"),
@@ -502,14 +514,26 @@ server <- function(input, output, session) {
                  calib()$tSecond, 
                  calib()$type,
                  known.coord=c(input$calib_lon,
-                               input$calib_lat) )[[1]] #the [[1]] is necessary to pull out just the median sun angle and not the rest of the shape, etc.
-    updateNumericInput(session,
+                               input$calib_lat) )[[1]]
+     #the [[1]] is necessary to pull out just the median sun angle 
+     #and not the rest of the values from this function
+    #updateNumericInput puts the newly calculated value into the numeric input field for sunangle.
+     updateNumericInput(session,
                        "sunangle", 
                        value = as.numeric(elev))
   })
-  ## Warning: Error in $<-.data.frame: replacement has 1 row, data has 0
-
-
+ 
+   ##################
+   #Get to TAGS format by including interpolations
+   ##################   
+   
+   final_TAGS <- reactive({
+     df <- FLightR::GeoLight2TAGS(geolocatordata_keep(),
+                                  edited_twilights()$consecTwilights,
+                                  input$light_threshold)
+     return(df)
+   })
+   
   ##################
   #MAP
   ##################
@@ -518,15 +542,19 @@ server <- function(input, output, session) {
    #the map is generated or refreshed with new values.
    #having this isolated in observeEvent keeps it from updating
    #constantly and using more server time.
+   
+   #Get coordinates for all consecutive twilights.
+   coord <- reactive({
+     coord(edited_twilights()$tFirst,
+                  edited_twilights()$tSecond,
+                  edited_twilights()$type,
+                  degElevation=input$sunangle)
+   })
+   
    observeEvent(input$update_map, {
      output$mymap <- renderLeaflet({
        
-       #Get coordinates for all consecutive twilights.
-       coord <- coord(edited_twilights()$tFirst,
-                      edited_twilights()$tSecond,
-                      edited_twilights()$type,
-                      degElevation=input$sunangle)
-       
+
        #run the leaflet function
        leaflet() %>%
          #add map tiles
@@ -534,7 +562,7 @@ server <- function(input, output, session) {
                           options = providerTileOptions(noWrap = TRUE)
          ) %>%
          #add the calculated coordinates based on edited twilights
-         addMarkers(data = coord)
+         addMarkers(data = coord())
      })
    })
    
@@ -556,9 +584,33 @@ server <- function(input, output, session) {
     
     content = function(file) {
       
-      write.csv(geolocatordata_keep(), file)
+      write.csv(final_TAGS(), file)
       
     })
+   
+   output$downloadDataCoord <- downloadHandler(
+     
+     filename = function() { 
+       paste("data-", Sys.Date(), ".csv", sep="")
+     },
+     
+     content = function(file) {
+       
+       write.csv(coord(), file)
+       
+     })
+   
+   output$downloadDataTwilights <- downloadHandler(
+     
+     filename = function() { 
+       paste("data-", Sys.Date(), ".csv", sep="")
+     },
+     
+     content = function(file) {
+       
+       write.csv(edited_twilights(), file)
+       
+     })
 }
 
 #Run the application 
