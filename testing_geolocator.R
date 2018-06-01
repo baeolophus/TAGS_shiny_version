@@ -59,15 +59,24 @@ FLightR::GeoLight2TAGS(hoopoe1,
                        1.5)
 GeoLight2TAGS
 
-source("TAGS_shiny/source_TAGS_twilightCalc.R")
+source("TAGS_shiny/source_TAGS_twilightCalc.R") #TAGS_twilight_calc
 twl <- TAGS_twilight_calc(hoopoe1$datetime, 
                     hoopoe1$light, 
-                    LightThreshold = 1.5)
+                    LightThreshold = TRUE)
 head(twl)
+tags <- FLightR::GeoLight2TAGS(hoopoe1,
+                       twl$consecTwilights,
+                       1.5)
+twl[[2]]$tSecond
 
 allTwilights <- twl[[1]]
-str(allTwilights[allTwilights$type >0,])
 consecTwilights <- twl[[2]]
+TAGS_twilight_calc(datetime = raw$datetime[raw$excluded == FALSE],
+                   light = raw$light[raw$excluded == FALSE],
+                   LightThreshold = input$light_threshold,
+                   allTwilights = FALSE)
+return(edited_twilights)
+
 consecTwilights$timetonext <- difftime(time1 = consecTwilights$tSecond,
                                        time2 = consecTwilights$tFirst,
                                        units = "hours")
