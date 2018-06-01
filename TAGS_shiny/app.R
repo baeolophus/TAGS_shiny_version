@@ -142,14 +142,17 @@ actionButton("update_map", "Generate map"),
 leafletOutput("mymap"),
 br(),
 
+DTOutput('TAGSformatpreview'),
+br(),
+
 #Button to download data.
 downloadButton('downloadData', 'Download TAGS format (original data with edits and twilights)'),
 
 #Add one for coordinates only
-downloadButton('downloadDataCoord', 'Download edited coordinates only'),
+downloadButton('downloadDataCoord', 'Download coordinates only'),
 
 #Add one for edited twilights only
-downloadButton('downloadDataTwilights', 'Download edited twilights only')
+downloadButton('downloadDataTwilights', 'Download twilights only')
 
 
 
@@ -202,7 +205,9 @@ server <- function(input, output, session) {
         tbl$datetime <- as.POSIXct(strptime(tbl$V2,
                                             format = "%d/%m/%y %H:%M:%S",
                                             tz = "GMT"))
-        tbl$lightlevel <- tbl$V4
+        tbl$light <- tbl$V4
+        tbl <- tbl[, c("datetime",
+                       "light")]
         return(tbl)
         
       } else 
@@ -215,7 +220,7 @@ server <- function(input, output, session) {
                         skip = 20)
         
         #names headers
-        names(tbl) <- c("datetime", "lightlevel")
+        names(tbl) <- c("datetime", "light")
         #specifies date and time format.
         tbl$datetime <- as.POSIXct(strptime(tbl$datetime,
                                             format = "%m/%d/%Y %H:%M:%S",
@@ -228,7 +233,7 @@ server <- function(input, output, session) {
                         header = TRUE,
                         sep=",")
         #renames headers if incorrect
-        names(tbl) <- c("datetime", "lightlevel")
+        names(tbl) <- c("datetime", "light")
         #specifies date and time format.
         tbl$datetime <- as.POSIXct(strptime(tbl$datetime,
                                             format = "%Y-%m-%d %H:%M:%S",
@@ -270,15 +275,18 @@ server <- function(input, output, session) {
   #########################
   #Create reactive object that calculates problem twilights.
   #THIS SECTION IS WHERE YOU WOULD PUT NEW METHODS FOR CALCULATING PROBLEM REGIONS.
+  #this is a method for calculating problems that uses
+  #GeoLight's twilight finder modified to remove some options.
+  twl <- reactive({
+    TAGS_twilight_calc(geolocatordata()$datetime, 
+                            geolocatordata()$light, 
+                            LightThreshold = input$light_threshold,
+                       allTwilights = TRUE)
+  })
+  
   probTwilights <- reactive ({
   
-    #this is a method for calculating problems that uses
-    #GeoLight's twilight finder modified to remove some options.
-    twl <- TAGS_twilight_calc(geolocatordata()$datetime, 
-                            geolocatordata()$light, 
-                            LightThreshold = input$light_threshold)
-  
-  consecTwilights <- twl[[2]]
+  consecTwilights <- twl()[[2]]
   consecTwilights$timetonext <- difftime(time1 = consecTwilights$tSecond,
                                          time2 = consecTwilights$tFirst,
                                          units = "hours")
@@ -296,7 +304,7 @@ server <- function(input, output, session) {
     ggplot() + 
       geom_line(data = geolocatordata(), 
                 mapping = aes(geolocatordata()$datetime,
-                    geolocatordata()$lightlevel))+
+                    geolocatordata()$light))+
       #draw a line showing where you have set light threshold
       geom_hline(yintercept = input$light_threshold,
                  col = "orange")+
@@ -310,7 +318,7 @@ server <- function(input, output, session) {
                 fill = "red",
                 alpha = 0.5)+
       labs(x = "datetime", 
-           y = "lightlevel")+
+           y = "light")+
       #draw pale gray box over editing window
       annotate("rect",
                xmin = window_x_min$x,
@@ -330,11 +338,11 @@ server <- function(input, output, session) {
   #to adapt to file upload
   
   vals <- reactiveValues( 
-    keeprows = NULL
+    excluded = NULL
     )
   
   observe({
-    vals$keeprows <- rep(TRUE,
+    vals$excluded <- rep(FALSE,
                          nrow(geolocatordata()))
   })
 
@@ -345,19 +353,19 @@ server <- function(input, output, session) {
 
     
     # Plot the kept and excluded points as two separate data sets
-    keep    <- geolocatordata()[ vals$keeprows == TRUE, , drop = FALSE]
-    exclude <- geolocatordata()[ vals$keeprows == FALSE, , drop = FALSE]
+    keep    <- geolocatordata()[ vals$excluded == FALSE, , drop = FALSE]
+    exclude <- geolocatordata()[ vals$excluded == TRUE, , drop = FALSE]
 
     ggplot() + 
       geom_point(data = keep, 
                  mapping = aes(datetime,
-                     lightlevel))+
+                     light))+
       geom_line(data = keep, 
                 mapping = aes(datetime,
-                              lightlevel))+
+                              light))+
       geom_point(data = exclude,
                  mapping = aes(datetime,
-                               lightlevel),
+                               light),
                  shape = 21, 
                  fill = NA, 
                  color = "black",
@@ -365,8 +373,8 @@ server <- function(input, output, session) {
       scale_x_datetime()+
       coord_cartesian(xlim = c(input$dateslider,
                                input$dateslider+input$time_window),
-                      ylim = c(min(geolocatordata()[,"lightlevel"], na.rm = TRUE),
-                               max(geolocatordata()[,"lightlevel"], na.rm = TRUE)))+
+                      ylim = c(min(geolocatordata()[,"light"], na.rm = TRUE),
+                               max(geolocatordata()[,"light"], na.rm = TRUE)))+
       geom_hline(yintercept = input$light_threshold,
                  col = "orange")+
       geom_rect(data = probTwilights(),
@@ -386,7 +394,7 @@ server <- function(input, output, session) {
                       input$plotselected_click,
                       allRows = TRUE)
     
-    vals$keeprows <- xor(vals$keeprows, res$selected_)
+    vals$excluded <- xor(vals$excluded, res$selected_)
   })
   
   # Toggle points that are selected, when toggle button is clicked
@@ -395,7 +403,7 @@ server <- function(input, output, session) {
                          input$plotselected_brush,
                          allRows = TRUE)
     
-    vals$keeprows <- xor(vals$keeprows, res$selected_)
+    vals$excluded <- xor(vals$excluded, res$selected_)
   })
   
 ##################
@@ -466,18 +474,18 @@ server <- function(input, output, session) {
   #A table to show what values you have excluded
   #(Removing it speeds up rendering the page.)
   
-  output$excludedtbl <- renderDT(geolocatordata()[vals$keeprows == FALSE, 
-                                                  c("datetime", "lightlevel"),
+  output$excludedtbl <- renderDT(geolocatordata()[vals$excluded == TRUE, 
+                                                  c("datetime", "light"),
                                                   drop = FALSE],
                                  server = TRUE)
   
   ##################
-  #Adding true/false keep column to new reactive data frame
+  #Adding true/false excluded column to new reactive data frame
   #This column needs to be in the final downloaded dataset.
   ##################
   geolocatordata_keep <- reactive ({
     df <- geolocatordata()
-    df$keeprows <- vals$keeprows
+    df$excluded <- vals$excluded
     return(df)
   })
   
@@ -490,10 +498,13 @@ server <- function(input, output, session) {
   #It is updated and then the calibration object (calib)
   #is updated too with new values generated by edited_twilights.
   edited_twilights <- reactive ({
-    edited_twilights <- twilightCalc(geolocatordata_keep()$datetime,
-                                     geolocatordata_keep()$lightlevel,
-                                     ask=F)
-  })
+    edited_twilights <- TAGS_twilight_calc(datetime = geolocatordata_keep()[geolocatordata_keep()$excluded == FALSE,
+                                                                                     "datetime"],
+                                           light = geolocatordata_keep()[geolocatordata_keep()$excluded == FALSE,"light"],
+                                           LightThreshold = input$light_threshold,
+                                           allTwilights = FALSE)
+  return(edited_twilights)
+    })
   
   calib <- reactive ({
 
@@ -502,7 +513,7 @@ server <- function(input, output, session) {
                         (as.numeric(as.Date(edited_twilights()$tFirst)) > as.numeric(input$start_calib_date))  
     
     )
-    
+    return(calib)
     
   })
 
@@ -526,14 +537,45 @@ server <- function(input, output, session) {
    ##################
    #Get to TAGS format by including interpolations
    ##################   
+   #From FLightR documentation:
+   #"The fields excluded and interp may have values of TRUE only for twilight > 0."
+   #But this does not make sense when we exclude data points, not twilights.
    
    final_TAGS <- reactive({
-     df <- FLightR::GeoLight2TAGS(geolocatordata_keep(),
-                                  edited_twilights()$consecTwilights,
-                                  input$light_threshold)
-     return(df)
+     #Must merge the raw data with twilights, note whether a value was interpolated.
+     raw <- geolocatordata_keep() #raw original values but with true/false excluded column
+     #That is how this function differents from FLightR: GeoLight2TAGS
+     #(it has no accounting for exclusion except to assume excluded = FALSE)
+     gl_twl <- edited_twilights() #Get edited twilights
+     raw$twilight <- 0
+     twl <- data.frame(datetime = as.POSIXct(c(gl_twl$tFirst, 
+                                               gl_twl$tSecond), "UTC"), 
+                       twilight = c(gl_twl$type,
+                                    ifelse(gl_twl$type == 1, 2, 1)))
+     twl <- twl[!duplicated(twl$datetime), ]
+     twl <- twl[order(twl[, 1]), ]
+     twl$light <- mean(stats::approx(x = raw$datetime,
+                                     y = raw$light, 
+                                     xout = twl$datetime)$y,
+                       na.rm = T)
+     tmp01 <- merge(raw,
+                    twl,
+                    all.y = TRUE,
+                    all.x = TRUE)
+     out <- data.frame(datetime = tmp01[, "datetime"], 
+                       light = tmp01[, "light"],
+                       twilight = tmp01[, "twilight"], 
+                       interp = FALSE, 
+                       excluded = tmp01[, "excluded"]) #use the excluded we have created, not assume false
+     out$interp[is.na(out$excluded)] <- TRUE #values are interpolated where it did not exist in original data.
+     out <- out[order(out[, 1]), ]
+     out[, 1] <- format(out[, 1], format = "%Y-%m-%dT%H:%M:%S.000Z")
+     
+     return(out)
    })
    
+   output$TAGSformatpreview <- renderDT(final_TAGS(),
+                                  server = TRUE)
   ##################
   #MAP
   ##################
@@ -545,10 +587,10 @@ server <- function(input, output, session) {
    
    #Get coordinates for all consecutive twilights.
    coord <- reactive({
-     coord(edited_twilights()$tFirst,
-                  edited_twilights()$tSecond,
-                  edited_twilights()$type,
-                  degElevation=input$sunangle)
+     GeoLight::coord(tFirst = edited_twilights()$tFirst,
+           tSecond = edited_twilights()$tSecond,
+           type = edited_twilights()$type,
+           degElevation=input$sunangle)
    })
    
    observeEvent(input$update_map, {
@@ -579,7 +621,7 @@ server <- function(input, output, session) {
   output$downloadData <- downloadHandler(
     
     filename = function() { 
-      paste("data-", Sys.Date(), ".csv", sep="")
+      paste("TAGS_format_data-", Sys.Date(), ".csv", sep="")
     },
     
     content = function(file) {
@@ -591,7 +633,7 @@ server <- function(input, output, session) {
    output$downloadDataCoord <- downloadHandler(
      
      filename = function() { 
-       paste("data-", Sys.Date(), ".csv", sep="")
+       paste("coord_data-", Sys.Date(), ".csv", sep="")
      },
      
      content = function(file) {
@@ -603,7 +645,7 @@ server <- function(input, output, session) {
    output$downloadDataTwilights <- downloadHandler(
      
      filename = function() { 
-       paste("data-", Sys.Date(), ".csv", sep="")
+       paste("twilights_data-", Sys.Date(), ".csv", sep="")
      },
      
      content = function(file) {
