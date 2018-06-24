@@ -9,6 +9,15 @@ library(ggplot2)
 library(leaflet)
 library(lubridate)
 library(scales)
+library(shinycssloaders)
+
+#######
+#There are currently no analytics but you can find information on how to implement here:
+# https://shiny.rstudio.com/articles/usage-metrics.html
+# http://docs.rstudio.com/shinyapps.io/metrics.html#ApplicationMetrics
+
+#To see how many github users have cloned the repository, visit here:
+# https://github.com/baeolophus/TAGS_shiny_version/graphs/traffic
 
 ########
 #Bring in functions to make the main app work.
@@ -92,10 +101,11 @@ sidebarLayout(
 
       h2("Step 5. Find problem areas and edit your data"),
       p("This plot shows all of your data with problem areas highlighted in red boxes and the location of the editing window shown in gray."),
+      p("An error may show briefly but the plot is still loading as long as the loading indicator returns."),
       #This places a plot in main area that shows all values from 
       #output$plotall (generated in server section)
-      plotOutput("plotall",
-                 height = "150px"),
+      withSpinner(plotOutput("plotall",
+                 height = "150px")),
      
       
 ##############################
@@ -125,12 +135,12 @@ numericInput("overlap_window", "What overlap with previous window?",
              value = (1/24)), #Default shows 1 hour in seconds (3600 sec)
 ##############################
 #plot a subset of the data that is zoomed in enough to see and edit individual points.
-      plotOutput("plotselected",
+      withSpinner(plotOutput("plotselected",
                  click = "plotselected_click",
                  brush = brushOpts(
                    id = "plotselected_brush"
                  )
-      ),
+      )),
 #buttons to toggle editing plot points selected by a box.
 actionButton("exclude_toggle", "Toggle currently selected points"),
 actionButton("exclude_reset", "Reset ALL EXCLUDED POINTS"),
@@ -363,6 +373,7 @@ server <- function(input, output, session) {
                fill = "gray",
                alpha = 0.5)
   })
+  
   
 
   
