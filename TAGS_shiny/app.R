@@ -28,9 +28,9 @@ sidebarLayout(
                    #TAGS logo placed here
                    
                    br(), #spacing/line break
-                   h3("Step 1a. Select your file"),
+                   h3("Step 1. Select your file"),
                    radioButtons("filetype", 
-                                label = "Select your filetype",
+                                label = "Select your filetype before browsing for your file",
                                 choices = list(".csv (generic data)",
                                                ".lig",
                                                ".lux"
@@ -45,6 +45,8 @@ sidebarLayout(
                                         ".lig",
                                         ".lux")
                             ),
+                   h3("Step 2. File description"),
+                   
 
                    textInput("name",
                              h4("Name"),
@@ -52,11 +54,8 @@ sidebarLayout(
                    textInput("species",
                              h4("Species"),
                              placeholder = "Painted Bunting"), #species
-                   textInput("notes",
-                             h4("Notes"),
-                             value = "Any notes here."),#notes
                    br(),
-                   h3("Step 1b. Calibration period information"),
+                   h3("Step 3. Calibration period information"),
                    numericInput("calib_lon", 
                                 h4("Calibration longitude"), 
                                 value = 0, #default value
@@ -76,9 +75,7 @@ sidebarLayout(
                    numericInput("sunangle", "Sun angle", value = 0),
                    actionButton("calculate", "Calculate sun angle from data"),
                    br(),
-                   h3("Step 1d. Upload your dataset"),
-                   #submitButton("Upload data")
-                   h3("Step 2. Light threshold entry"),
+                   h3("Step 4. Light threshold entry"),
                    #Enter a value for light threshold to calculate sunrise/sunset.
                    numericInput("light_threshold", 
                                 h4("Light threshold"), 
@@ -86,13 +83,13 @@ sidebarLayout(
                                 step = 0.1)
                    ),
       mainPanel(
-       h2("Step 1. About your data"),
+       h2("File description: about your data"),
        textOutput("selected_filetype"),
        textOutput("selected_species"),
        textOutput("selected_name"),
        textOutput("selected_notes"),
        br(),
-      h2("Step 2. Edit and analyze"),
+      h2("Step 5. Find problem areas and edit your data"),
       
       #This places a plot in main area that shows all values from 
       #output$plotall (generated in server section)
@@ -132,7 +129,7 @@ br(),
 #Show table of excluded items based on selections in plotselected.
 DTOutput('excludedtbl'),
 
-h2("Step 3. View and download results"),
+h2("Step 6. Generate coordinates"),
 
 #This actionButton is linked by its name (update_map) to an observeEvent in the server function
 #When you press this the mymap object is shown.
@@ -142,8 +139,12 @@ actionButton("update_map", "Generate map"),
 leafletOutput("mymap"),
 br(),
 
+h2("Preview of TAGS format data"),
+
 DTOutput('TAGSformatpreview'),
 br(),
+
+h2("Step 7. Download data"),
 
 #Button to download data.
 downloadButton('downloadData', 'Download TAGS format (original data with edits and twilights)'),
@@ -408,6 +409,12 @@ server <- function(input, output, session) {
     
     vals$excluded <- xor(vals$excluded, res$selected_)
   })
+  observeEvent(input$exclude_reset, 
+               {
+                 vals$excluded <- rep(FALSE,
+                                      nrow(geolocatordata()))
+                 }
+               )
   
 ##################
   #Buttons for moving forward and backwards in the dataset
