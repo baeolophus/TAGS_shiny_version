@@ -291,7 +291,10 @@ server <- function(input, output, session) {
                                          time2 = consecTwilights$tFirst,
                                          units = "hours")
   #Then we flag twilights with < 5 hrs time to next twilight as potential problems.
-  probTwilights <- consecTwilights[consecTwilights$timetonext < 5,]
+  probTwilights <- consecTwilights[consecTwilights$timetonext < 5,
+                                   c("tFirst",
+                                     "tSecond",
+                                     "type")]
   #This final object is the one that is passed outside as the reactive object used later.
   #So if you do additional methods or change it, make sure the last object is the one that contains
   #problem twilights with columns tFirst (POSIXct), tSecond (POSIXct), and type (num)
@@ -562,13 +565,57 @@ server <- function(input, output, session) {
                     twl,
                     all.y = TRUE,
                     all.x = TRUE)
-     out <- data.frame(datetime = tmp01[, "datetime"], 
+     out0 <- data.frame(datetime = tmp01[, "datetime"], 
                        light = tmp01[, "light"],
                        twilight = tmp01[, "twilight"], 
                        interp = FALSE, 
                        excluded = tmp01[, "excluded"]) #use the excluded we have created, not assume false
-     out$interp[is.na(out$excluded)] <- TRUE #values are interpolated where it did not exist in original data.
-     out <- out[order(out[, 1]), ]
+     out0$interp[is.na(out0$excluded)] <- TRUE #values are interpolated where it did not exist in original data.
+     out0$excluded[is.na(out0$excluded)] <- FALSE #values from the edited twilights were not excluded and MUST have a value.
+     
+     #now merge in original twilights and note as excluded, as FlightR at least will account for that.
+     gl_twl2 <- twl()[[2]]
+     twl2 <- data.frame(datetime = as.POSIXct(c(gl_twl2$tFirst, 
+                                               gl_twl2$tSecond), "UTC"), 
+                       twilight = c(gl_twl2$type,
+                                    ifelse(gl_twl2$type == 1, 2, 1)))
+     twl2 <- twl2[!duplicated(twl2$datetime), ]
+     twl2 <- twl2[order(twl2[, 1]), ]
+     twl2$light <- mean(stats::approx(x = raw$datetime,
+                                     y = raw$light, 
+                                     xout = twl2$datetime)$y,
+                       na.rm = T)
+     
+     
+     tmp02 <- merge(raw,
+                    twl2,
+                    all.y = TRUE,
+                    all.x = TRUE)
+     
+     out1 <- data.frame(datetime = tmp02[, "datetime"], 
+                        light = tmp02[, "light"],
+                        twilight = tmp02[, "twilight"], 
+                        interp = FALSE, 
+                        excluded = tmp02[, "excluded"]) #use the excluded we have created, not assume false
+     out1$interp[is.na(out1$excluded)] <- TRUE #values are interpolated where it did not exist in original data.
+     
+     #return all rows from x (the full set of twilights) but only use twilight values from the good ones.
+     out2 <- left_join(x = out1, #x is the full set, makes sure you get the whole set back.
+                       y = out0[,c("datetime", 
+                                   "light",
+                                   "interp")], #y are the edited twilights, but we don't want their twilight or exclusion values.
+                       by = c("datetime", #join on datetime, light, and interpolation.
+                              "light",
+                              "interp"))
+     
+     #It results in the edited, good twilights having NA.
+     #so where is.na then replace NA with FALSE for excluded.
+     out2$excluded[is.na(out2$excluded)] <- FALSE
+     
+     #Order final result.
+     out <- out2[order(out2[, 1]), ]
+     
+     #format it to correct datetime format.
      out[, 1] <- format(out[, 1], format = "%Y-%m-%dT%H:%M:%S.000Z")
      
      return(out)
@@ -621,12 +668,18 @@ server <- function(input, output, session) {
   output$downloadData <- downloadHandler(
     
     filename = function() { 
-      paste("TAGS_format_data-", Sys.Date(), ".csv", sep="")
+      paste("TAGS_format_data-", 
+            Sys.Date(),
+            ".csv",
+            sep="")
     },
     
     content = function(file) {
       
-      write.csv(final_TAGS(), file)
+      write.csv(final_TAGS(), 
+                file,
+                quote = FALSE,
+                row.names = FALSE)
       
     })
    
