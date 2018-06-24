@@ -258,6 +258,7 @@ server <- function(input, output, session) {
   #########################
   #Create reactive object to put a value into seconds from the edit_units,
   #input$time_window, and input$overlap_window, because posixct seconds are actually required to make it work.
+
   time_window <- reactive ({
     if (input$edit_units == "days")
     {window_size_in_sec <- input$time_window * 24 * 60 * 60
