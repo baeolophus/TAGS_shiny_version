@@ -9,6 +9,10 @@ library(DayTripR)
 library(SGAT)
 library(FLightR) #Takes tags input.  Does not calculate twilight.
 
+a<-get.tags.data('TAGS_shiny/data/sample_TAGS_format_from_lig.csv')
+a<-get.tags.data('example_TAGS_format.csv')
+
+
 #TAGS original website specifies using GeoLight
 #https://github.com/tags/tags-docker/blob/master/geologger/geologger.py
 #https://github.com/tags/pygeologger/blob/master/geologger.py
@@ -48,7 +52,7 @@ head(hoopoe1)
 
 #use ligTrans, luxTrans, or as.POSIXct to get time into correct format.
 hoopoe1$datetime <- as.POSIXct(strptime(hoopoe1$datetime, format = "%Y-%m-%d %H:%M:%S", tz = "GMT"))
-twl <- twilightCalc(hoopoe1$datetime, 
+twl3 <- twilightCalc(hoopoe1$datetime, 
                     hoopoe1$light, 
                     LightThreshold = 1.5,
                     ask = F,

@@ -691,7 +691,10 @@ server <- function(input, output, session) {
      
      content = function(file) {
        
-       write.csv(coord(), file)
+       write.csv(coord(), 
+                 file,
+                 quote = FALSE,
+                 row.names = FALSE)
        
      })
    
@@ -703,7 +706,10 @@ server <- function(input, output, session) {
      
      content = function(file) {
        
-       write.csv(edited_twilights(), file)
+       write.csv(edited_twilights(),
+                 file,
+                 quote = FALSE,
+                 row.names = FALSE)
        
      })
 }
