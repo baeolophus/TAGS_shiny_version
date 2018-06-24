@@ -45,17 +45,8 @@ sidebarLayout(
                                         ".lig",
                                         ".lux")
                             ),
-                   h3("Step 2. File description"),
-                   
-
-                   textInput("name",
-                             h4("Name"),
-                             placeholder = "PABU_123"),  #name
-                   textInput("species",
-                             h4("Species"),
-                             placeholder = "Painted Bunting"), #species
                    br(),
-                   h3("Step 3. Calibration period information"),
+                   h3("Step 2. Calibration period information"),
                    numericInput("calib_lon", 
                                 h4("Calibration longitude"), 
                                 value = 0, #default value
@@ -75,22 +66,32 @@ sidebarLayout(
                    numericInput("sunangle", "Sun angle", value = 0),
                    actionButton("calculate", "Calculate sun angle from data"),
                    br(),
-                   h3("Step 4. Light threshold entry"),
+                   h3("Step 3. Light threshold entry"),
                    #Enter a value for light threshold to calculate sunrise/sunset.
                    numericInput("light_threshold", 
                                 h4("Light threshold"), 
                                 value = 5.5,
-                                step = 0.1)
-                   ),
+                                step = 0.1),
+                   br(),
+                   h3("Step 4. Optional: change value for finding problem areas"),
+                   #Enter a value for length of time between twilights to count as a potential problem.
+                   p("This is the difference in twilight times in hours that will highlight a twilight as a potential problem in red."),
+                   p("Five hours is usually suitable, but you can experiment if you wish to highlight further potential problems."),
+                   p("Changing the value will not erase your previous selections for excluded points."),
+                   
+                   numericInput("problem_threshold", 
+                                h4("Problem threshold (hours)"), 
+                                value = 5,
+                                step = 1,
+                                min = 0,
+                                max = 24)
+                   
+
+),
       mainPanel(
-       h2("File description: about your data"),
-       textOutput("selected_filetype"),
-       textOutput("selected_species"),
-       textOutput("selected_name"),
-       textOutput("selected_notes"),
-       br(),
+
       h2("Step 5. Find problem areas and edit your data"),
-      
+      p("This plot shows all of your data with problem areas highlighted in red boxes and the location of the editing window shown in gray."),
       #This places a plot in main area that shows all values from 
       #output$plotall (generated in server section)
       plotOutput("plotall",
@@ -103,8 +104,11 @@ sidebarLayout(
 
 uiOutput("dateslider"),
 
-actionButton("click_Prev", "Previous window"),
-actionButton("click_Next", "Next window"),
+p("The plot below can be edited by clicking a single data point or left-clicking and dragging your cursor to select multiple points."),
+p("Use the Previous and Next buttons to move to the next or previous editing window or problem twilight"),
+actionButton("click_Prev", "Previous editing window"),
+actionButton("click_Next", "Next editing window"),
+br(),
 actionButton("click_PrevProb", "Previous problem"),
 actionButton("click_NextProb", "Next problem"),
 radioButtons("edit_units", 
@@ -135,6 +139,7 @@ br(),
 
 #############
 #Show table of excluded items based on selections in plotselected.
+p("These are all currently excluded data points."),
 DTOutput('excludedtbl'),
 
 h2("Step 6. Generate coordinates"),
@@ -158,10 +163,10 @@ h2("Step 7. Download data"),
 downloadButton('downloadData', 'Download TAGS format (original data with edits and twilights)'),
 
 #Add one for coordinates only
-downloadButton('downloadDataCoord', 'Download coordinates only'),
+downloadButton('downloadDataCoord', 'Download edited coordinates only'),
 
 #Add one for edited twilights only
-downloadButton('downloadDataTwilights', 'Download twilights only')
+downloadButton('downloadDataTwilights', 'Download edited twilights only')
 
 
 
@@ -281,7 +286,7 @@ server <- function(input, output, session) {
   #create a user interface dynamic slider based on reactive data
   output$dateslider <- renderUI({
     sliderInput("dateslider",
-                "datetime",
+                "Start date/time of editing window",
                 min = min(geolocatordata()$datetime, na.rm = TRUE),
                 max = max(geolocatordata()$datetime, na.rm = TRUE),
                 value = min(geolocatordata()$datetime, na.rm = TRUE), #This sets the initial range to first two days of the dataset
@@ -317,7 +322,7 @@ server <- function(input, output, session) {
                                          time2 = consecTwilights$tFirst,
                                          units = "hours")
   #Then we flag twilights with < 5 hrs time to next twilight as potential problems.
-  probTwilights <- consecTwilights[consecTwilights$timetonext < 5,
+  probTwilights <- consecTwilights[consecTwilights$timetonext < input$problem_threshold,
                                    c("tFirst",
                                      "tSecond",
                                      "type")]
