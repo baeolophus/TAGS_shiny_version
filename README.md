@@ -1,2 +1,3 @@
-TAGS, the Totally Awesome Geolocator Service, will be back online in August 2018.  This web-based service allows you to edit messy geolocator data in a point-and-click format while saving excluded values for reproducible work.  A downloadable R Shiny app will be available if you need to work locally as well.
-As of June 2018, TAGS works if you want to download the R code on the repository, but it still needs further polishing before being released as a website.
+TAGS, the Totally Awesome Geolocator Service, will be back online in August 2018.  This web-based service allows you to edit messy geolocator data in a point-and-click format while saving excluded values for reproducible work.  TAGS automatically suggests potential problem areas, lets you move from problem to problem to edit, and shows a map of coordinates generated from your data given your current edits. 
+
+As of 24 June 2018, TAGS is now functional.  Please clone the code from the repository to use it on your own computer.  It will be released as a web app before the IOC2018 meeting in mid-August 2018.
