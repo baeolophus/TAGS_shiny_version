@@ -107,10 +107,18 @@ actionButton("click_Prev", "Previous window"),
 actionButton("click_Next", "Next window"),
 actionButton("click_PrevProb", "Previous problem"),
 actionButton("click_NextProb", "Next problem"),
-numericInput("time_window", "Editing window",
-             value = 172800), #Default shows 2 days in seconds for posixct
+radioButtons("edit_units", 
+             label = "Select your time units",
+             choices = list("days",
+                            "hours"),
+             selected = "days"),
+
+
+numericInput("time_window", "Editing window length",
+             value = 2), #Default shows 2 days in seconds (172800) for posixct
+
 numericInput("overlap_window", "What overlap with previous window?",
-             value = 3600), #Default shows 1 hour in seconds
+             value = (1/24)), #Default shows 1 hour in seconds (3600 sec)
 ##############################
 #plot a subset of the data that is zoomed in enough to see and edit individual points.
       plotOutput("plotselected",
@@ -247,10 +255,26 @@ server <- function(input, output, session) {
     }
   }) 
       
-      
-      
-      
-      
+  #########################
+  #Create reactive object to put a value into seconds from the edit_units,
+  #input$time_window, and input$overlap_window
+  time_window <- reactive ({
+    if (input$edit_units == "days")
+    {window_size_in_sec <- input$time_window * 24 * 60 * 60
+  return(window_size_in_sec)}
+  else
+  {{window_size_in_sec <- input$time_window * 60 * 60
+  return(window_size_in_sec)}}   
+  })  
+  
+  overlap_window <- reactive ({
+    if (input$edit_units == "days")
+    {overlap_size_in_sec <- input$overlap_window * 24 * 60 * 60
+    return(overlap_size_in_sec)}
+    else
+    {{overlap_size_in_sec <- input$overlap_window * 60 * 60
+    return(overlap_size_in_sec)}}   
+  })      
   
 #########################
   #create a user interface dynamic slider based on reactive data
@@ -326,7 +350,7 @@ server <- function(input, output, session) {
       #draw pale gray box over editing window
       annotate("rect",
                xmin = window_x_min$x,
-               xmax = window_x_min$x+input$time_window,
+               xmax = window_x_min$x+time_window(),
                ymin = -Inf,
                ymax = Inf,
                col = "gray",
@@ -376,7 +400,7 @@ server <- function(input, output, session) {
                  alpha = 0.25)+
       scale_x_datetime()+
       coord_cartesian(xlim = c(input$dateslider,
-                               input$dateslider+input$time_window),
+                               input$dateslider+time_window()),
                       ylim = c(min(geolocatordata()[,"light"], na.rm = TRUE),
                                max(geolocatordata()[,"light"], na.rm = TRUE)))+
       geom_hline(yintercept = input$light_threshold,
@@ -425,7 +449,7 @@ server <- function(input, output, session) {
   #When you click next, it goes to the next window's x coordinate minus any overlap with previous window.
   observeEvent(input$click_Next,
                handlerExpr = {
-                 window_x_min$x <- window_x_min$x + input$time_window - input$overlap_window
+                 window_x_min$x <- window_x_min$x + time_window() - overlap_window()
                  updateSliderInput(session,
                                    "dateslider",
                                    value = window_x_min$x)
@@ -433,7 +457,7 @@ server <- function(input, output, session) {
   #Same for previous except it goes back in time.
   observeEvent(input$click_Prev,
                handlerExpr = {
-                 window_x_min$x <-  window_x_min$x - (input$time_window - input$overlap_window)
+                 window_x_min$x <-  window_x_min$x - (time_window() - overlap_window())
                  updateSliderInput(session,
                                    "dateslider",
                                    value = window_x_min$x)
