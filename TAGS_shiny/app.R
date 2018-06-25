@@ -30,14 +30,21 @@ source("global.R")
 #This is where you lay out page design and specify buttons, etc.
 ui <- fluidPage(
   titlePanel(
-             h1("Totally Awesome Geolocator Service")),
-  
+             "Totally Awesome Geolocator Service",
+             windowTitle = "TAGS"),
+  # img(src = "images/TAGS_logo.png"),
+  # #TAGS logo placed here
 sidebarLayout(
-      sidebarPanel(img(src = "TAGS_logo.png"),
-                   #TAGS logo placed here
+      sidebarPanel(
                    
-                   br(), #spacing/line break
                    h3("Step 1. Select your file"),
+                   p("File upload limit of 30 mb; please run the app on your own machine if you have larger datasets."),
+                   tags$a(href="https://github.com/baeolophus/TAGS_shiny_version",
+                          "Get the TAGS app code here."),
+                   br(),
+                   tags$a(href="mailto: cmcurry@ou.edu",
+                          "Contact Claire M. Curry with any questions."),
+                   br(),
                    radioButtons("filetype", 
                                 label = "Select your filetype before browsing for your file",
                                 choices = list(".csv (generic data)",
@@ -54,7 +61,7 @@ sidebarLayout(
                                         ".lig",
                                         ".lux")
                             ),
-                   br(),
+                   br(), #linebreak
                    h3("Step 2. Calibration period information"),
                    numericInput("calib_lon", 
                                 h4("Calibration longitude"), 
@@ -718,6 +725,7 @@ server <- function(input, output, session) {
     
     filename = function() { 
       paste("TAGS_format_data-", 
+            input$filename,
             Sys.Date(),
             ".csv",
             sep="")
@@ -735,7 +743,9 @@ server <- function(input, output, session) {
    output$downloadDataCoord <- downloadHandler(
      
      filename = function() { 
-       paste("coord_data-", Sys.Date(), ".csv", sep="")
+       paste("coord_data-", 
+             input$filename,
+             Sys.Date(), ".csv", sep="")
      },
      
      content = function(file) {
@@ -750,7 +760,9 @@ server <- function(input, output, session) {
    output$downloadDataTwilights <- downloadHandler(
      
      filename = function() { 
-       paste("twilights_data-", Sys.Date(), ".csv", sep="")
+       paste("twilights_data-", 
+             input$filename,
+             Sys.Date(), ".csv", sep="")
      },
      
      content = function(file) {
@@ -765,7 +777,6 @@ server <- function(input, output, session) {
 
 #Run the application 
 shinyApp(ui = ui, 
-         server = server,
-         options = list(display.mode = 'showcase'))
+         server = server)
 
 
