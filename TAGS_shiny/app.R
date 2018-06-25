@@ -115,12 +115,7 @@ sidebarLayout(
 uiOutput("dateslider"),
 
 p("The plot below can be edited by clicking a single data point or left-clicking and dragging your cursor to select multiple points."),
-p("Use the Previous and Next buttons to move to the next or previous editing window or problem twilight"),
-actionButton("click_Prev", "Previous editing window"),
-actionButton("click_Next", "Next editing window"),
-br(),
-actionButton("click_PrevProb", "Previous problem"),
-actionButton("click_NextProb", "Next problem"),
+
 radioButtons("edit_units", 
              label = "Select your time units",
              choices = list("days",
@@ -132,39 +127,40 @@ numericInput("time_window", "Editing window length",
              value = 2), #Default shows 2 days in seconds (172800) for posixct
 
 numericInput("overlap_window", "What overlap with previous window?",
-             value = (1/24)), #Default shows 1 hour in seconds (3600 sec)
+             value = round(1/24, 2)), #Default shows 1 hour in seconds (3600 sec)
+p("Use the Previous and Next buttons to move to the next or previous editing window or problem twilight"),
+actionButton("click_Prev", "Previous editing window"),
+actionButton("click_Next", "Next editing window"),
+br(),
+actionButton("click_PrevProb", "Previous problem"),
+actionButton("click_NextProb", "Next problem"),
 ##############################
 #plot a subset of the data that is zoomed in enough to see and edit individual points.
-      withSpinner(plotOutput("plotselected",
+      plotOutput("plotselected",
                  click = "plotselected_click",
                  brush = brushOpts(
                    id = "plotselected_brush"
                  )
-      )),
+      ),
 #buttons to toggle editing plot points selected by a box.
 actionButton("exclude_toggle", "Toggle currently selected points"),
 actionButton("exclude_reset", "Reset ALL EXCLUDED POINTS"),
 br(),
 
-
-#############
-#Show table of excluded items based on selections in plotselected.
-p("These are all currently excluded data points."),
+actionButton("render_edits", "Show/refresh edited values"),
 DTOutput('excludedtbl'),
-
 h2("Step 6. Generate coordinates"),
 
 #This actionButton is linked by its name (update_map) to an observeEvent in the server function
-#When you press this the mymap object is shown.
-actionButton("update_map", "Generate map"),
+#When you press this the keep dataset is generated and the mymap object is shown.
 
+actionButton("create_data", "6A. Generate edited twilights for coordinate calculation"),
+DTOutput('data_preview'),
+
+br(),
+actionButton("update_map", "6B. Generate map from edited twilights"),
 #Map showing calculated coordinates from sunrise/sunset times.
 leafletOutput("mymap"),
-br(),
-
-h2("Preview of TAGS format data"),
-
-DTOutput('TAGSformatpreview'),
 br(),
 
 h2("Step 7. Download data"),
@@ -294,6 +290,7 @@ server <- function(input, output, session) {
   
 #########################
   #create a user interface dynamic slider based on reactive data
+  #shows where the start of the editing window is located and changed with that change in value.
   output$dateslider <- renderUI({
     sliderInput("dateslider",
                 "Start date/time of editing window",
@@ -524,22 +521,27 @@ server <- function(input, output, session) {
   ###################
   #A table to show what values you have excluded
   #(Removing it speeds up rendering the page.)
-  
-  output$excludedtbl <- renderDT(geolocatordata()[vals$excluded == TRUE, 
-                                                  c("datetime", "light"),
-                                                  drop = FALSE],
-                                 server = TRUE)
+  observeEvent(input$render_edits, {
+   output$excludedtbl <- renderDT(geolocatordata()[vals$excluded == TRUE, 
+                                                   c("datetime", "light"),
+                                                   drop = FALSE],
+                                  server = TRUE)
+  })
   
   ##################
   #Adding true/false excluded column to new reactive data frame
   #This column needs to be in the final downloaded dataset.
   ##################
-  geolocatordata_keep <- reactive ({
+  geolocatordata_keep <- eventReactive(input$create_data, {
     df <- geolocatordata()
     df$excluded <- vals$excluded
     return(df)
+
   })
-  
+  observeEvent(input$create_data, {
+    output$data_preview <- renderDT(geolocatordata_keep(),
+                                   server = TRUE)
+  })
   ##################
   #Calibration/computation of sun elevation angle from calibration data.
   ##################
@@ -669,8 +671,7 @@ server <- function(input, output, session) {
      return(out)
    })
    
-   output$TAGSformatpreview <- renderDT(final_TAGS(),
-                                  server = TRUE)
+
   ##################
   #MAP
   ##################
