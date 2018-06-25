@@ -1,0 +1,10 @@
+name: tags_shiny
+title:
+username:
+account: tags
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 367052
+bundleId: 1448264
+url: https://tags.shinyapps.io/tags_shiny/
+when: 1529955929.41329
