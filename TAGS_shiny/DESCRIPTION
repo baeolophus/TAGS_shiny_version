@@ -1,7 +1,7 @@
-Title: Hello Shiny!
-Author: RStudio, Inc.
-AuthorUrl: http://www.rstudio.com/
+Title: Totally Awesome Geolocator Service
+Author: Claire M. Curry
+AuthorUrl: http://thebridgelab.oucreate.com/
 License: MIT
-DisplayMode: Showcase
-Tags: getting-started
+DisplayMode: Normal
+Tags: geolocator, data
 Type: Shiny
