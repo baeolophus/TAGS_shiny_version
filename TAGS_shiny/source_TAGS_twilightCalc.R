@@ -1,8 +1,9 @@
 #Modified from source code of GeoLight
 #Distributed under GPL3 license.
+#source("TAGS_shiny/source_iPreselection.R") #local non-app.R testing location
+#source("TAGS_shiny/source_iTwilightEvents.R") #local non-app.R testing location
 source("source_iPreselection.R")
 source("source_iTwilightEvents.R")
-
 TAGS_twilight_calc <- function (datetime,
                                 light, 
                                 LightThreshold = TRUE, 
