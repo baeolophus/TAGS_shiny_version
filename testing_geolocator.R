@@ -9,6 +9,22 @@ library(DayTripR)
 library(SGAT)
 library(FLightR) #Takes tags input.  Does not calculate twilight.
 
+
+tbl <- read.csv("data/V167_25Aug17_162504.lux",
+                header = FALSE,
+                sep="\t", #.lux is tab separated not comma
+                skip = 20)
+
+#names headers
+names(tbl) <- c("datetime", "light")
+#specifies date and time format.
+tbl$datetime <- as.POSIXct(strptime(tbl$datetime,
+                                    format = "%d/%m/%Y %H:%M:%S",
+                                    tz = "GMT"))
+
+
+
+
 a<-get.tags.data('TAGS_shiny/data/sample_TAGS_format_from_lig.csv')
 a<-get.tags.data('example_TAGS_format.csv')
 

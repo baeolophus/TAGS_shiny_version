@@ -250,7 +250,7 @@ server <- function(input, output, session) {
         names(tbl) <- c("datetime", "light")
         #specifies date and time format.
         tbl$datetime <- as.POSIXct(strptime(tbl$datetime,
-                                            format = "%m/%d/%Y %H:%M:%S",
+                                            format = "%d/%m/%Y %H:%M:%S",
                                             tz = "GMT"))
         return(tbl)
         
