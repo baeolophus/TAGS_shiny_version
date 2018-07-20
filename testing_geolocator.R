@@ -10,7 +10,7 @@ library(SGAT)
 library(FLightR) #Takes tags input.  Does not calculate twilight.
 
 
-tbl <- read.csv("data/V167_25Aug17_162504.lux",
+tbl <- read.csv("C:/Users/curr0024/Downloads/BC089_23Feb18_233911.lux",
                 header = FALSE,
                 sep="\t", #.lux is tab separated not comma
                 skip = 20)
@@ -22,6 +22,75 @@ tbl$datetime <- as.POSIXct(strptime(tbl$datetime,
                                     format = "%d/%m/%Y %H:%M:%S",
                                     tz = "GMT"))
 
+
+light_threshold <- 5.5
+problem_threshold <- 5
+
+source("TAGS_shiny/source_TAGS_twilightCalc.R") #TAGS_twilight_calc
+twl <-   TAGS_twilight_calc(tbl$datetime, 
+                     tbl$light, 
+                     LightThreshold = light_threshold,
+                     allTwilights = TRUE)
+
+
+
+  consecTwilights <- twl[[2]]
+  consecTwilights$timetonext <- difftime(time1 = consecTwilights$tSecond,
+                                         time2 = consecTwilights$tFirst,
+                                         units = "hours")
+  #Then we flag twilights with < 5 hrs time to next twilight as potential problems.
+  probTwilights <- consecTwilights[consecTwilights$timetonext < problem_threshold,
+                                   c("tFirst",
+                                     "tSecond",
+                                     "type")]
+  #This final object is the one that is passed outside as the reactive object used later.
+  #So if you do additional methods or change it, make sure the last object is the one that contains
+  #problem twilights with columns tFirst (POSIXct), tSecond (POSIXct), and type (num)
+
+
+x <- 0
+time_window <- 2 #days
+  
+plotall <- ggplot() + 
+    geom_line(data = tbl, 
+              mapping = aes(tbl$datetime,
+                            tbl$light))+
+    #draw a line showing where you have set light threshold
+    geom_hline(yintercept = light_threshold,
+               col = "orange")+
+    #draw red boxes around problem twilights
+    geom_rect(data = probTwilights,
+              mapping = aes(xmin = tFirst,
+                            xmax = tSecond,
+                            ymin = -Inf,
+                            ymax = Inf),  #problem is here with .lux.  Why does it work with .lig?
+              col = "red",
+              fill = "red",
+              alpha = 0.5)+
+    labs(x = "datetime", 
+         y = "light")+
+    #draw pale gray box over editing window
+    annotate("rect",
+             xmin = x,
+             xmax = x+time_window,
+             ymin = -Inf,
+             ymax = Inf,
+             col = "gray",
+             fill = "gray",
+             alpha = 0.5)
+
+
+#.lig version
+tbl <- read.csv("data/PABU222150719.lig",
+                header = FALSE,
+                sep=",")
+#specifies date and time format.
+tbl$datetime <- as.POSIXct(strptime(tbl$V2,
+                                    format = "%d/%m/%y %H:%M:%S",
+                                    tz = "GMT"))
+tbl$light <- tbl$V4
+tbl <- tbl[, c("datetime",
+               "light")]
 
 
 
@@ -79,7 +148,6 @@ FLightR::GeoLight2TAGS(hoopoe1,
                        1.5)
 GeoLight2TAGS
 
-source("TAGS_shiny/source_TAGS_twilightCalc.R") #TAGS_twilight_calc
 twl <- TAGS_twilight_calc(hoopoe1$datetime, 
                     hoopoe1$light, 
                     LightThreshold = TRUE)
