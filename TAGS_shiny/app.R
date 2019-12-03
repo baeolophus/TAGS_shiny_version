@@ -567,10 +567,10 @@ server <- function(input, output, session) {
     })
   
   calib <- reactive ({
-
-      calib <- subset(edited_twilights(),
-                      (as.numeric(as.Date(edited_twilights()$tSecond)) < as.numeric(input$stop_calib_date))&
-                        (as.numeric(as.Date(edited_twilights()$tFirst)) > as.numeric(input$start_calib_date))  
+      consecTwilights <- twl()[[2]]
+      calib <- subset(consecTwilights,
+                      (as.numeric(as.Date(consecTwilights$tSecond)) < as.numeric(input$stop_calib_date))&
+                        (as.numeric(as.Date(consecTwilights$tFirst)) > as.numeric(input$start_calib_date))  
     
     )
     return(calib)
@@ -608,18 +608,18 @@ server <- function(input, output, session) {
      #(it has no accounting for exclusion except to assume excluded = FALSE)
      gl_twl <- edited_twilights() #Get edited twilights
      raw$twilight <- 0
-     twl <- data.frame(datetime = as.POSIXct(c(gl_twl$tFirst, 
+     twl_internal <- data.frame(datetime = as.POSIXct(c(gl_twl$tFirst, 
                                                gl_twl$tSecond), "UTC"), 
                        twilight = c(gl_twl$type,
                                     ifelse(gl_twl$type == 1, 2, 1)))
-     twl <- twl[!duplicated(twl$datetime), ]
-     twl <- twl[order(twl[, 1]), ]
-     twl$light <- mean(stats::approx(x = raw$datetime,
+     twl_internal <- twl_internal[!duplicated(twl_internal$datetime), ]
+     twl_internal <- twl_internal[order(twl_internal[, 1]), ]
+     twl_internal$light <- mean(stats::approx(x = raw$datetime,
                                      y = raw$light, 
-                                     xout = twl$datetime)$y,
+                                     xout = twl_internal$datetime)$y,
                        na.rm = T)
      tmp01 <- merge(raw,
-                    twl,
+                    twl_internal,
                     all.y = TRUE,
                     all.x = TRUE)
      out0 <- data.frame(datetime = tmp01[, "datetime"], 
