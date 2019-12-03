@@ -38,6 +38,12 @@ twl <-   TAGS_twilight_calc(tbl$datetime,
   consecTwilights$timetonext <- difftime(time1 = consecTwilights$tSecond,
                                          time2 = consecTwilights$tFirst,
                                          units = "hours")
+  coord <- GeoLight::coord(tFirst = consecTwilights$tFirst,
+                    tSecond = consecTwilights$tSecond,
+                    type = consecTwilights$type,
+                    degElevation=0)
+  
+  
   #Then we flag twilights with < 5 hrs time to next twilight as potential problems.
   probTwilights <- consecTwilights[consecTwilights$timetonext < problem_threshold,
                                    c("tFirst",

@@ -608,18 +608,18 @@ server <- function(input, output, session) {
      #(it has no accounting for exclusion except to assume excluded = FALSE)
      gl_twl <- edited_twilights() #Get edited twilights
      raw$twilight <- 0
-     twl_internal <- data.frame(datetime = as.POSIXct(c(gl_twl$tFirst, 
+     twl <- data.frame(datetime = as.POSIXct(c(gl_twl$tFirst, 
                                                gl_twl$tSecond), "UTC"), 
                        twilight = c(gl_twl$type,
                                     ifelse(gl_twl$type == 1, 2, 1)))
-     twl_internal <- twl_internal[!duplicated(twl_internal$datetime), ]
-     twl_internal <- twl_internal[order(twl_internal[, 1]), ]
-     twl_internal$light <- mean(stats::approx(x = raw$datetime,
+     twl <- twl[!duplicated(twl$datetime), ]
+     twl <- twl[order(twl[, 1]), ]
+     twl$light <- mean(stats::approx(x = raw$datetime,
                                      y = raw$light, 
-                                     xout = twl_internal$datetime)$y,
+                                     xout = twl$datetime)$y,
                        na.rm = T)
      tmp01 <- merge(raw,
-                    twl_internal,
+                    twl,
                     all.y = TRUE,
                     all.x = TRUE)
      out0 <- data.frame(datetime = tmp01[, "datetime"], 
@@ -690,10 +690,15 @@ server <- function(input, output, session) {
    
    #Get coordinates for all consecutive twilights.
    coord <- reactive({
-     GeoLight::coord(tFirst = edited_twilights()$tFirst,
-           tSecond = edited_twilights()$tSecond,
-           type = edited_twilights()$type,
+     ctwl <- edited_twilights()
+     coord <- GeoLight::coord(tFirst = ctwl$tFirst,
+           tSecond = ctwl$tSecond,
+           type = ctwl$type,
            degElevation=input$sunangle)
+     coord.df <- data.frame(coord)
+     coord.df$long <- coord.df$lon #rename default to match what addMarkers in leaflet() lines below requires.
+     coord.df$lon <- NULL #delete old column
+     return(coord.df)
    })
    
    observeEvent(input$update_map, {
@@ -703,8 +708,8 @@ server <- function(input, output, session) {
        #run the leaflet function
        leaflet() %>%
          #add map tiles
-         addProviderTiles(providers$Stamen.TonerLite,
-                          options = providerTileOptions(noWrap = TRUE)
+         addProviderTiles(provider = "Stamen.TonerLite",
+                         options = providerTileOptions(noWrap = TRUE)
          ) %>%
          #add the calculated coordinates based on edited twilights
          addMarkers(data = coord())
