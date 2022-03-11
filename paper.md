@@ -38,6 +38,8 @@ Geolocator data has XYZ problems.  @Eli-S-Bridge
 #"State of the field: Do the authors describe how this software compares to other commonly-used packages?"- https://joss.readthedocs.io/en/latest/review_criteria.html
 This package is designed to be used by researchers with messy light-level geolocator data.  The software is featured in has been recently featured as one of the major tool in the workflow for geolocators (Lisovski et al. 2020 - https://besjournals.onlinelibrary.wiley.com/doi/pdf/10.1111/1365-2656.13036) - see section 3 and table 1.    The redesigned RShiny code base was created in 2018, but the project previously existed in JavaScript since 2013 (citations??).  The code base is commented to indicate where future contributes can extend the project with additional geolocator data cleaning packages.  The redesigned tool was debuted to practitioners at a geolocator-specific animal tracking workshop for the International Ornithological Congress in Vancounver BC in 2018.
 
+Citations and needs to address in paper: https://github.com/openjournals/joss/issues/1031
+
 # Citations
 
 Citations to entries in paper.bib should be in
