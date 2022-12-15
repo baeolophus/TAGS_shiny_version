@@ -2,7 +2,8 @@
 <a href="https://tags.shinyapps.io/tags_shiny/">TAGS, the Totally Awesome Geolocator Service</a> is a web-based service that allows you, the researcher, to edit messy geolocator data in a point-and-click format while saving excluded values for reproducible work.  TAGS automatically suggests potential problem areas based on unexpected values (and you can change the threshold for these), lets you move from problem to problem to edit, and shows a map of coordinates generated from your data given your current edits. 
 
 # Installation instructions
-TAGS is a browser-based RShiny app.  If you have a dataset >30 mb, please clone the code from the repository to use it on your own computer.  You can install RStudio and R following these instructions.  Then install the package dependencies listed in the code [FIXME: provide installation code for these packages for the user to paste.]
+TAGS can be used as a browser-based RShiny app for datasets <30 megabytes.  If you have a dataset >30 mb, please clone the code from the repository to use it on your own computer.  You can install <https://posit.co/download/rstudio-desktop//>RStudio and <https://cran.r-project.org/doc/FAQ/R-FAQ.html#How-can-R-be-installed_003f>R following these instructions.  Then install the package dependencies listed below in R.
+  install.packages("shiny", "dplyr", "DT", "FLightR", "GeoLight", "ggplot2", "leaflet", "lubridate", "scales", "shiny", "shinycssloaders")
 
 # Example usage
 Need sample data.
