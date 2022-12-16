@@ -66,7 +66,7 @@ TAGS works with generic .csv data containing two columns (datetime and lightleve
 TAGS is designed to highlight potential false twilights (from shade, artificial lighting, etc).  This value is how TAGS chooses potential problem twilights to highlight visually in red in Step 5.  Thus, the problem threshold value should reflect what you view as the smallest possible time you might go from light to dark or vice versa naturally.  The default value 5 hours. The steps are in increments of 1 hour, and the values allowed are 0 hrs to 24 hrs.  Five hours is usually suitable for most regions.  Changing the value will **not** erase your previous selections for excluded points, so you can experiment if you wish to highlight further potential problems without losing existing edits.
  
  ## Step 5. Find problem areas and edit your data
-This step contains two plots.  The first plot shows shows all of your data with problem areas highlighted in red boxes and the location of the editing window shown in gray.  (An error may show briefly on the overall data view plot, but the plot is still loading as long as the loading indicator returns.)
+This step contains two plots (generated with ggplot2).  The first plot shows shows all of your data with problem areas highlighted in red boxes and the location of the editing window shown in gray.  (An error may show briefly on the overall data view plot, but the plot is still loading as long as the loading indicator returns.)
 
 The second plot is shown below window settings and is the interactive plot where you choose points to exclude.
 
@@ -81,9 +81,10 @@ The editing plot (the second plot in this section) can be moved in two ways: by 
 - Show/refresh edited values: FIXME
  
  ## Step 6. Generate coordinates
-- 6A. Generate edited twilights for coordinate calculation
-- 6B. Generate map from edited twilights
-  - Documentation for the underlying Geolight R package is at https://github.com/slisovski/GeoLight and explains how daylight changes are calculated.
+- 6A. Generate edited twilights for coordinate calculation: this step creates lat/long coordinates in decimal degrees using the function GeoLight::coord and shows them in a table on the TAGS page.
+- 6B. Generate map from edited twilights: this step takes the coordinates from Step 6A and plots them using ggplot2.
+
+Documentation for the underlying Geolight R package is at https://github.com/slisovski/GeoLight and explains how twilights are calculated.
  
  ## Step 7. Download data
 Data can be downloaded as a .csv file in three formats.
