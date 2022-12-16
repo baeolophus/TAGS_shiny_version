@@ -57,13 +57,13 @@ Below, we explain the default and available values at each step of the TAGS proc
 TAGS works with generic .csv data containing suitable headers, as well as two geolocator file types (.lig and .lux).  We provide three CC0-licensed data files, one for each file type, to provide an example in the previous section.  Required headers for each file type are FIXME.
   
  ## Step 2. Calibration period information
- FIXME
+ Enter the latitude and longitude in decimal degrees, start date, stop date, and sun angle for the calibration period in your data file.  Date can be selected from a calendar when you click on either date box, or entered in format YYYY-MM-DD.  The values default to 0 for both latitude and longitude, the current date for both stop and start dates, and 0 for sun angle.  The arrow buttons steps up latitude and longitude in 0.00001 decimal degree increments.  The sun angle can also be calculated by clicking the button "Calculate sun angle from data" and in that case, the sun angle will appear in that same box.
  
  ## Step 3. Light threshold entry
- FIXME
+ The default light threshold is 5.5 and can be changed in increments of 0.1 with the arrows on the right side of the box.
  
  ## Step 4. Optional: change value for finding problem areas
- FIXME - range of values tested
+Problem threshold is default 5 hours.  The steps are in increments of 1 hour, and the values allowed are 0 hrs to 24 hrs.  This is the difference in twilight times in hours that will highlight a twilight as a potential problem in red.  Five hours is usually suitable for most regions, but you can experiment if you wish to highlight further potential problems.  Changing the value will **not** erase your previous selections for excluded points.
  
  ## Step 5. Find problem areas and edit your data
 This step contains two plots.  The first plot shows shows all of your data with problem areas highlighted in red boxes and the location of the editing window shown in gray.  (An error may show briefly on the overall data view plot, but the plot is still loading as long as the loading indicator returns.)
