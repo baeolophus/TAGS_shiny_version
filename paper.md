@@ -74,6 +74,6 @@ For a quick reference, the following citation commands can be used:
 
 # Acknowledgements
 
-We thank Simeon Lisovski for comments on TAGS and guidance in adapting the R Geolight package; and Jonah Duckles and Phil Dow for contributions to a previous version of TAGS in JavaScript.
+We thank Simeon Lisovski for comments on TAGS and guidance in adapting the R Geolight package; Jonah Duckles and Phil Dow for contributions to a previous version of TAGS in JavaScript; Paula Cimprich for selecting example data; and Wes Honeycutt for comments on the manuscript.
 
 # References
