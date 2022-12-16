@@ -76,7 +76,11 @@ The editing plot (the second plot in this section) can be moved in two ways: by 
   - Documentation for the underlying Geolight R package is at https://github.com/slisovski/GeoLight and explains how daylight changes are calculated.
  
  ## Step 7. Download data
-FIXME
+Data can be downloaded as a .csv file in three formats.
+ - Recommended: "Download TAGS format (original data with edits and twilights)" - use this if you are taking the data to another geolocator processing software that requires a TAGS format OR if the format will be accepted by other programs.  One of the additional benefits of the TAGS format is that it documents your edits, so if the next package in your workflow will accept this format, it is a reproducible choice.  Column headers will be "datetime" (in POSIXct format in UTC), "light", "twilight", "interp" (TRUE/FALSE), and "excluded" (TRUE/FALSE)
+ - "Download edited coordinates only" - use this if you only want the coordinates for your tag after editing.
+ - "Download edited twilights only" - use this if you want the twilights after editing.
+
 
 # Automated tests
 Geolocator data is cleaned visually and manually with this tool.  A map is created in step 6 to allow you to check whether points are appearing where expected relative to your animal release point.  Citations explaining the GeoLight location calculation methods are available at https://github.com/slisovski/GeoLight .  The manual cleaning and annotating created by TAGS is expected to be used before FIXME additional steps (citation).
