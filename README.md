@@ -63,7 +63,7 @@ TAGS works with generic .csv data containing two columns (datetime and lightleve
  The default light threshold is 5.5 and can be changed in increments of 0.1 with the arrows on the right side of the box.
  
  ## Step 4. Optional: change value for finding problem areas
-Problem threshold is default 5 hours.  The steps are in increments of 1 hour, and the values allowed are 0 hrs to 24 hrs.  This is the difference in twilight times in hours that will highlight a twilight as a potential problem in red.  Five hours is usually suitable for most regions, but you can experiment if you wish to highlight further potential problems.  Changing the value will **not** erase your previous selections for excluded points.
+TAGS is designed to highlight potential false twilights (from shade, artificial lighting, etc).  This value is how TAGS chooses potential problem twilights to highlight visually in red in Step 5.  Thus, the problem threshold value should reflect what you view as the smallest possible time you might go from light to dark or vice versa naturally.  The default value 5 hours. The steps are in increments of 1 hour, and the values allowed are 0 hrs to 24 hrs.  Five hours is usually suitable for most regions.  Changing the value will **not** erase your previous selections for excluded points, so you can experiment if you wish to highlight further potential problems without losing existing edits.
  
  ## Step 5. Find problem areas and edit your data
 This step contains two plots.  The first plot shows shows all of your data with problem areas highlighted in red boxes and the location of the editing window shown in gray.  (An error may show briefly on the overall data view plot, but the plot is still loading as long as the loading indicator returns.)
