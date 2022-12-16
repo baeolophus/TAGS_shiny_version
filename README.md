@@ -56,11 +56,24 @@ TAGS works with generic .csv data containing suitable headers, as well as two ge
  FIXME - range of values tested
  
  ## Step 5. Find problem areas and edit your data
- FIXME
+This step contains two plots.  The first plot shows shows all of your data with problem areas highlighted in red boxes and the location of the editing window shown in gray.  (An error may show briefly on the overall data view plot, but the plot is still loading as long as the loading indicator returns.)
+
+The second plot is shown below window settings and is the interactive plot where you choose points to exclude.
+
+The window settings are as follows:
+- Default unit is days, but can be changed with the radio button to hours.
+ - "Editing window length" is in days and defaults to a two-day window.
+ - "What overlap with previous window" is in days and defaults to 1 hour (172800 seconds), which is 0.04 day.
+
+The editing plot (the second plot in this section) can be moved in two ways: by editing window or by problem (as illustrated in the first plot).  Use the Previous and Next buttons to move to the next or previous editing window or problem twilight.  You can click individual points to toggle them from included (default) to excluded. Below the editing plot are three buttons.
+- Toggle currently selected points: clicking this button toggles the state (excluded/included) for the currently selected point or points.
+- Reset ALL EXCLUDED POINTS: FIXME
+- Show/refresh edited values: FIXME
  
  ## Step 6. Generate coordinates
- FIXME
- Documentation for the underlying Geolight R package is at https://github.com/slisovski/GeoLight and explains how daylight changes are calculated.
+- 6A. Generate edited twilights for coordinate calculation
+- 6B. Generate map from edited twilights
+  - Documentation for the underlying Geolight R package is at https://github.com/slisovski/GeoLight and explains how daylight changes are calculated.
  
  ## Step 7. Download data
 FIXME
