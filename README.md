@@ -2,7 +2,15 @@
 <a href="https://tags.shinyapps.io/tags_shiny/">TAGS, the Totally Awesome Geolocator Service</a> is a web-based service that allows you, the researcher, to edit messy geolocator data in a point-and-click format while saving excluded values for reproducible work.  TAGS automatically suggests potential problem areas based on unexpected values (and you can change the threshold for these), lets you move from problem to problem to edit, and shows a map of coordinates generated from your data given your current edits. 
 
 # Installation instructions
-TAGS can be used as a browser-based RShiny app for datasets <30 megabytes.  If you have a dataset >30 mb, please clone the code from the repository to use it on your own computer.  You can install <a href=https://posit.co/download/rstudio-desktop//>RStudio</a> and <a href=https://cran.r-project.org/doc/FAQ/R-FAQ.html#How-can-R-be-installed_003f>R</a> following these instructions.  Then install the package dependencies listed below in R.
+TAGS can be used as a browser-based RShiny app for datasets <30 megabytes.  If you have a dataset >30 mb, please clone the code from the repository to use it on your own computer.
+
+```
+git clone https://github.com/baeolophus/TAGS_shiny_version.git
+```
+
+You can install <a href=https://posit.co/download/rstudio-desktop//>RStudio</a> and <a href=https://cran.r-project.org/doc/FAQ/R-FAQ.html#How-can-R-be-installed_003f>R</a> following these instructions.
+
+Then install the package dependencies listed below in R.
 ```
   install.packages("shiny", 
   "dplyr",
@@ -16,6 +24,8 @@ TAGS can be used as a browser-based RShiny app for datasets <30 megabytes.  If y
   "shiny", 
   "shinycssloaders")
 ```
+After the R packages are installed, you can run the R code from within RStudio by opening the file TAGS_shiny/app.R and running the code therein, including the final two lines that start the RShiny app locally.
+
 # Example usage
 
 ## Step 1. Select your file
