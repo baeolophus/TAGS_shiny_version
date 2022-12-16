@@ -54,7 +54,7 @@ TAGS works with generic .csv data containing suitable headers, as well as two ge
 # Functionality documentation
 Below, we explain the default and available values at each step of the TAGS process.  
 ## Step 1. Select your file
-TAGS works with generic .csv data containing suitable headers, as well as two geolocator file types (.lig and .lux).  We provide three CC0-licensed data files, one for each file type, to provide an example in the previous section.  Required headers for each file type are FIXME.
+TAGS works with generic .csv data containing two columns (datetime and lightlevel; the headers will be renamed in that order), as well as two geolocator file types (.lig and .lux).  We provide three CC0-licensed data files, one for each file type, to provide an example in the previous section. Column headers will be renamed to "datetime" and "light".
   
  ## Step 2. Calibration period information
  Enter the latitude and longitude in decimal degrees, start date, stop date, and sun angle for the calibration period in your data file.  Date can be selected from a calendar when you click on either date box, or entered in format YYYY-MM-DD.  The values default to 0 for both latitude and longitude, the current date for both stop and start dates, and 0 for sun angle.  The arrow buttons steps up latitude and longitude in 0.00001 decimal degree increments.  The sun angle can also be calculated by clicking the button "Calculate sun angle from data" and in that case, the sun angle will appear in that same box.
