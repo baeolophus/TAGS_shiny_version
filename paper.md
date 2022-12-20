@@ -26,10 +26,9 @@ bibliography: paper.bib
 
 # Summary " Summary: Has a clear description of the high-level functionality and purpose of the software for a diverse, non-specialist audience been provided?"- https://joss.readthedocs.io/en/latest/review_criteria.html
 
-What are geolocators here in 2-4 sentences.  @Eli-S-Bridge
+Studies of avian migration frequently entail the use of tracking devices to map the movements of birds in space and time. Of the several types of tracking devices available, the smallest are light-level geolocation dataloggers. These devices may weigh less than 1 gram and are used to track birds that are too small to carry devices like GPS-enabled transmitters or cellular-based trackers. Geolocators are also inexpensive relative to other tracking devices, and can sometimes be deployed in large numbers. By simply recording light levels at short time intervals, geolocators provide estimates of the time of sunrise and sunset, which in turn allows one to infer latitude (based on day length) and longitude (based on the time of solar noon and/or midnight). Although this tracking method is limited by the fact that the tracked animal must be recaptured to recover the tag, geolocators have revolutionized our understanding of songbird migration. 
 
-Geolocator data has XYZ problems.  @Eli-S-Bridge
-
+Transforming light level data from a geolocator into geographical coordinates requires several analytical steps. The first step generally involves visualizing the data and editing instances where light level values have apparently been altered by shading or other interference. TAGS is a shiny app built with the R computing environment that provides a user-friendly platform for performing this crucial first step in the analysis of geolocator data. The software provides a simple visual interface for displaying tag data and “zooming in” on problem areas. It also allows for data editing through an annotation process such that changes made to the dataset are tracked, making the entire analysis process repeatable. As the users edit their data they can perform preliminary geographical analyses to see their migratory flight paths take shape. Finally, the output from TAGS is compatible with all of the mainstream R packages (e.g. FLightR, GeoLight, and SGAT) that are accepted as standards for generating publishable results from geolocator data. 
 
 # Statement of need
 
