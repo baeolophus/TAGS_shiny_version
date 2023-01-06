@@ -15,17 +15,20 @@ You can install <a href=https://posit.co/download/rstudio-desktop//>RStudio</a> 
 
 Then install the package dependencies listed below in R.
 ```
-  install.packages("shiny", 
+  install.packages( 
+  "devtools", # needed for GeoLight only
   "dplyr",
   "DT",
   "FLightR", 
-  "GeoLight",
   "ggplot2",
   "leaflet",
   "lubridate",
   "scales", 
   "shiny", 
   "shinycssloaders")
+  
+  devtools::install_github("SLisovski/GeoLight")
+
 ```
 After the R packages are installed, you can run the R code from within RStudio by opening the file TAGS_shiny/app.R and running the code therein, including the final two lines that start the RShiny app locally.
 
