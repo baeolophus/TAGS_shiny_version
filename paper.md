@@ -50,23 +50,7 @@ Other wrappers to compare to see if we meet scope:
 - https://joss.theoj.org/papers/10.21105/joss.01160
 - Other wrappers: https://joss.theoj.org/papers/search?q=wrapper
 
-# Citations
-
-## Already in .bib collection
-Bridge 2011 https://www.jstor.org/stable/10.1525/bio.2011.61.9.7?searchText=%28geolocator%29+AND+%28threshold%29+AND+%28tags%29&searchUri=%2Faction%2FdoBasicSearch%3FQuery%3D%2528geolocator%2529%2BAND%2B%2528threshold%2529%2BAND%2B%2528tags%2529%26so%3Drel&ab_segments=0%2Fbasic_search_gsv2%2Fcontrol&refreqid=fastly-default%3A6fae9abe1f5ebd0f793392e70c549308&seq=1
-
-(Lisovski et al. 2020 - https://besjournals.onlinelibrary.wiley.com/doi/pdf/10.1111/1365-2656.13036) - see section 3 and table 1
-
-https://github.com/slisovski/GeoLight/blob/master/vignettes/GeoLight2.0.Rmd - geolight vignette says to use TAGS and how R plots are not interactive or feasible for large datasets
-
-Lisovski & Hahn 2012 https://besjournals.onlinelibrary.wiley.com/doi/pdf/10.1111/j.2041-210X.2012.00185.x
-
-Rakhimberdiev et al. 2015 https://movementecologyjournal.biomedcentral.com/articles/10.1186/s40462-015-0062-5
-Pierce et al. 2017:  https://www.jstor.org/stable/44994030?searchText=%28geolocator%29+AND+%28threshold%29+AND+%28totally+AND+awesome%29&searchUri=%2Faction%2FdoBasicSearch%3FQuery%3D%2528geolocator%2529%2BAND%2B%2528threshold%2529%2BAND%2B%2528totally%2BAND%2Bawesome%2529%26so%3Drel&ab_segments=0%2Fbasic_search_gsv2%2Fcontrol&refreqid=fastly-default%3A0a8b5f3c3bb790b2165df502277edb05&seq=1
-Johnson et al. 2016: https://www.jstor.org/stable/44994015?searchText=%28geolocator%29+AND+%28threshold%29+AND+%28totally+AND+awesome%29&searchUri=%2Faction%2FdoBasicSearch%3FQuery%3D%2528geolocator%2529%2BAND%2B%2528threshold%2529%2BAND%2B%2528totally%2BAND%2Bawesome%2529%26so%3Drel&ab_segments=0%2Fbasic_search_gsv2%2Fcontrol&refreqid=fastly-default%3Af6ac719f66969722d396fc4eb1e791e4&seq=1
-Contina et al 2013: https://www.jstor.org/stable/10.1525/auk.2013.13003?seq=1
-
-## Formatting
+# TO REMOVE: Citations Formatting
 Citations to entries in paper.bib should be in
 [rMarkdown](http://rmarkdown.rstudio.com/authoring_bibliographies_and_citations.html)
 format.
