@@ -1,5 +1,6 @@
-TAGS, the Totally Awesome Geolocator Service, is <a href="https://tags.shinyapps.io/tags_shiny/">back online</a>.  This web-based service allows you to edit messy geolocator data in a point-and-click format while saving excluded values for reproducible work.  TAGS automatically suggests potential problem areas, lets you move from problem to problem to edit, and shows a map of coordinates generated from your data given your current edits.   Please clone the code from the repository to use it on your own computer for datasets >30 mb.
-=======
+# TAGS, the Totally Awesome Geolocator Service
+TAGS is <a href="https://tags.shinyapps.io/tags_shiny/">a web-based service</a> that allows you to edit messy geolocator data in a point-and-click format while saving excluded values for reproducible work.  TAGS automatically suggests potential problem areas, lets you move from problem to problem to edit, and shows a map of coordinates generated from your data given your current edits.   Please clone the code from the repository to use it on your own computer for datasets >30 mb.
+
 # What is TAGS?
 <a href="https://tags.shinyapps.io/tags_shiny/">TAGS, the Totally Awesome Geolocator Service</a> is a web-based service that allows you, the researcher, to edit messy geolocator data in a point-and-click format while saving excluded values for reproducible work.  TAGS automatically suggests potential problem areas based on unexpected values (and you can change the threshold for these), lets you move from problem to problem to edit, and shows a map of coordinates generated from your data given your current edits. 
 
