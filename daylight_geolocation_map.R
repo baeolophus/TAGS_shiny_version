@@ -40,11 +40,3 @@ ggplot() +
                     yend = arbitrary_day,#same
                     x = max(terminator_line$lon[terminator_line$lat>arbitrary_day]),
                 xend = min(terminator_line$lon[terminator_line$lat>arbitrary_day])))
-plot(x = terminator_line$lon,
-     y = terminator_line$lat,
-     type = "p")
-points(add = TRUE,
-     y = max(terminator_line$lat), #correct
-     x = terminator_line$lon[which.max(terminator_line$lat)], 
-     size = 5,
-     col = "red")
