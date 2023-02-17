@@ -2,80 +2,121 @@
 #                          dependencies = TRUE,
 #                          INSTALL_opts = c("--no-multiarch"))
 
-library(ggplot2)
+
 library(dplyr)
 library(ggalt)
+library(ggplot2)
+library(ggpubr)
 library(maps)
 library(terminator)
 
 
 WorldData <- map_data('world') %>% fortify()
 
-terminator_line <- terminator(as.integer((as.POSIXct(Sys.Date()) + (60*60*(7)))), -180, 180, 0.1)
+arbitrary_time <- 12
+terminator_line <- terminator(as.integer((as.POSIXct(Sys.Date()) + (60*60*(arbitrary_time)))), -180, 180, 0.1)
 
 arbitrary_day <- median(terminator_line$lat)+15
 
 locator_map <- ggplot() +
   geom_map(data = WorldData, map = WorldData,
            aes(group = group, map_id=region),
-           fill = "white", colour = "#7f7f7f", size=0.5)+
+           fill = "beige", colour = "#7f7f7f", size=0.5)+
   geom_ribbon( 
     data=terminator_line,
-    aes(lon, ymin=lat, ymax=90), fill="lightslategray", alpha=1/2
+    aes(lon, ymin=lat, ymax=90), fill="black", alpha=1.5/2
   ) +
   geom_line( 
     data=terminator_line,
-    aes(lon, lat), color = "blue"
+    aes(lon, lat), color = "yellow"
   ) +
-  scale_x_continuous(limits=c(-180, 180)) +
-  coord_quickmap() +
+  scale_x_continuous(limits=c(-180, 190)) +
+  coord_quickmap()+
+  theme(axis.line = element_line(),
+        axis.text.x=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks=element_blank(),
+        legend.position="none",
+        panel.background=element_blank(),
+        panel.grid.minor=element_blank(),
+        plot.background=element_blank())+
   ggthemes::theme_map() +
-  #solar noon line (indicates longitude)
+  #solar noon line (indicates longitude, vertical line on plot)
   geom_segment(mapping = aes(x = terminator_line$lon[which.max(terminator_line$lat)], 
-               xend = terminator_line$lon[which.max(terminator_line$lat)],
-               y = min(terminator_line$lat),
-               yend = max(terminator_line$lat)),
+                             xend = terminator_line$lon[which.max(terminator_line$lat)],
+                             y = min(terminator_line$lat),
+                             yend = max(terminator_line$lat)),
                arrow = arrow (ends = "both"),
-               linewidth = 3) +
-  # daylength (indicates latitude)
-   geom_segment(mapping = aes(y = arbitrary_day,   #arbirary chosen line
-                    yend = arbitrary_day,#same
-                    x = max(terminator_line$lon[terminator_line$lat>arbitrary_day]),
-                xend = min(terminator_line$lon[terminator_line$lat>arbitrary_day])),
-                arrow = arrow (ends = "both"),
-                linewidth = 2)+
+               linewidth = 1) +
+# daylength (indicates latitude, horizontal line on plot)
+  geom_segment(mapping = aes(y = arbitrary_day,   
+                             yend = arbitrary_day,
+                             x = max(terminator_line$lon[terminator_line$lat>arbitrary_day]),
+                             xend = min(terminator_line$lon[terminator_line$lat>arbitrary_day])),
+               arrow = arrow (ends = "both"),
+               linewidth = 1)+
   # lines to connect light_plot to locator_plot
-  geom_segment(mapping = aes(y = arbitrary_day,   #arbirary chosen line
-                             yend = min(terminator_line$lat)-50,            # base of plot
+  # Then extend these lines in inkscape to touch lower plot twilights,
+  # as coded solution too complex for what I want to do right now
+  # https://stackoverflow.com/questions/57730069/how-to-add-lines-on-combined-ggplots-from-points-on-one-plot-to-points-on-the-o
+  geom_segment(mapping = aes(y = arbitrary_day,    
+                             yend = min(terminator_line$lat)-5,            # base of plot
                              x = max(terminator_line$lon[terminator_line$lat>arbitrary_day]),
                              xend = max(terminator_line$lon[terminator_line$lat>arbitrary_day])),
-               color = "gray",
+               color = "black",
                linewidth = 0.6,
-               arrow = arrow(ends = "last"))+
-  geom_segment(mapping = aes(y = arbitrary_day,   #arbirary chosen line
-                             yend = min(terminator_line$lat)-50,            # base of plot
+               arrow = arrow(ends = "last",
+                             length = unit(0.25,
+                                           "cm")))+
+  geom_segment(mapping = aes(y = arbitrary_day,   
+                             yend = min(terminator_line$lat)-5,            # base of plot
                              x = min(terminator_line$lon[terminator_line$lat>arbitrary_day]),
                              xend = min(terminator_line$lon[terminator_line$lat>arbitrary_day])),
-               color = "gray",
+               color = "black",
                linewidth = 0.6,
-               arrow = arrow(ends = "last"))
+               arrow = arrow(ends = "last",
+                             length = unit(0.25,
+                                           "cm"))) +
+    # label for solar noon line
+    annotate("label", 
+             x = sun_df$scaled_longitude[sun_df$Time24hr==115],
+             y = max(terminator_line$lat), 
+             label = "Solar noon (longitude)",
+             fill = "gray",
+             hjust = 1,
+             size = 2) +
+    # label for daylength line
+    annotate("label",
+             x = 0,
+             y = 0, 
+             label = "Daylength (latitude)",
+             fill = "gray",
+             hjust = 0.5,
+             size = 2)
 locator_map
 
 
 #Create data frame with 24 rows to scale to latitude/daylength (x)
-sun_df <- data.frame("Time24hr" = seq(0:23),
-                     "Light" = 1,
-                     "scaled_longitude" = seq(from= -180, to = 180, length.out = 24))
+sun_df <- data.frame("Time24hr" = seq(0:239),
+                     "Light" = -90,
+                     "scaled_longitude" = seq(from= min(terminator_line$lon),
+                                              to = max(terminator_line$lon), 
+                                              length.out = 240))
 
 # Show light for daylight
 sun_df$Light[sun_df$scaled_longitude >= min(terminator_line$lon[terminator_line$lat>arbitrary_day])&
-               sun_df$scaled_longitude <= max(terminator_line$lon[terminator_line$lat>arbitrary_day])] <- 5
+               sun_df$scaled_longitude <= max(terminator_line$lon[terminator_line$lat>arbitrary_day])] <- 90
 
-# Add in noisy points for demo in rows 5, 15, 18, and 20 
-sun_df$Light[c(5)] <- 1.5
-sun_df$Light[c(13)] <- 2
-sun_df$Light[c(15, 20)] <- 4.9
-sun_df$Light[18] <- 4.75
+# Add in noisy points for demo in rows 50, 100-101, 130, 145, 150
+sun_df$Light[c(50)] <- -50
+sun_df$Light[c(100:101)] <- -30
+sun_df$Light[c(145)] <- 68
+sun_df$Light[c(130, 150)] <- 65
+
+sun_df$daylight <- "night"
+sun_df$daylight[sun_df$scaled_longitude >= min(terminator_line$lon[terminator_line$lat>arbitrary_day])&
+                  sun_df$scaled_longitude <= max(terminator_line$lon[terminator_line$lat>arbitrary_day])] <- "day"
+
 
 
 # create light plot (lower panel)
@@ -83,41 +124,73 @@ light_plot <- ggplot(data = sun_df,
                      mapping = aes(x = scaled_longitude,
                                    y = Light))+
   geom_line()+
-  
-  scale_x_continuous(limits=c(-180, 180)) +
+  scale_x_continuous(limits=c(-180, 190)) +
+  coord_quickmap()+ #needed to get horizontal axes to align in ggarrange plot
+  theme(axis.line = element_line(),
+    axis.text.x=element_blank(),
+    axis.text.y=element_blank(),
+    axis.ticks=element_blank(),
+    legend.position="none",
+    panel.background=element_blank(),
+    panel.grid.minor=element_blank(),
+    plot.background=element_blank())+ 
+  labs(x = "Time (24 hrs)",
+       y = "Light intensity")+
+  geom_tile(mapping = aes(x = scaled_longitude,
+                          y = 0,
+                          height = 180,
+                          fill = daylight),
+            alpha = 0.5)+
+  scale_fill_manual(values = c("yellow", "black"))+
+  # label and point for example low light intensity during presumed daylight
+  # annotate("label",
+  #          x = sun_df$scaled_longitude[sun_df$Time24hr==130],
+  #          y = min(sun_df[sun_df$daylight=="day","Light"])-0.5, 
+  #          label = "Deviation example: Potential shading",
+  #          color = "black",
+  #          size = 2)+
+  geom_point(
+    x = sun_df$scaled_longitude[101],
+    y = sun_df$Light[101],
+    color = "red",
+    size = 2)+
+# label and point for high light intensity during presumed night
+# annotate("label",
+#          x = sun_df$scaled_longitude[sun_df$Time24hr==50],
+#          y = max(sun_df[sun_df$daylight=="night","Light"], na.rm = TRUE)+0.5, 
+#          label = "Deviation example: Potential artifical light",
+#          color = "black",
+#          size = 2,
+#         hjust = 1)+
+  geom_point(
+    x = sun_df$scaled_longitude[50],
+    y = sun_df$Light[50],
+    color = "red",
+    size = 2)#+
+  # # label for calculated twilights (sunrise)
+  # annotate("text",
+  #          x = sun_df$scaled_longitude[sun_df$Time24hr==70],
+  #          y = 0, 
+  #          label = "Calculated twilight (sunrise)",
+  #          angle = 90)+
+  # 
+  # # label for calculated twilights (sunset)
+  # annotate("text",
+  #          x = sun_df$scaled_longitude[sun_df$Time24hr==180],
+  #          y = 0, 
+  #          label = "Calculated twilight (sunset)",
+  #          angle = 90)
 
-  
-  theme(
-        axis.text.x=element_blank(),
-        axis.text.y=element_blank(),
-        axis.ticks=element_blank(),
-        legend.position="none",
-        panel.background=element_blank(),
-        #panel.grid.major=element_blank(),
-        panel.grid.minor=element_blank(),
-        plot.background=element_blank())+  theme(axis.line = element_line())
 
 light_plot
 
-library(ggpubr)
+
+# Combine both plots into final Figure 1 for manuscript.
 
 ggarrange(locator_map,
           light_plot,
           ncol = 1,
           nrow = 2,
-          align = "v")
+          align = "hv"
+          )
 
-library(cowplot)
-
-plot_grid(locator_map,
-light_plot,
-nrow = 2,
-align = "v")
-
-library(gridExtra)
-
-g<- arrangeGrob(locator_map,
-            light_plot,
-            ncol = 1)
-
-grid::grid.newpage() ; grid::grid.draw(g)
