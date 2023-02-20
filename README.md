@@ -36,7 +36,7 @@ After the R packages are installed, you can run the R code from within RStudio b
 
 ## Step 1. Select your file
 TAGS works with generic .csv data containing suitable headers, as well as two geolocator file types (.lig and .lux).  We provide three CC0-licensed data files, one for each file type, to provide an example.  Choose the sample file that has an extension or format matching yours (.csv, .lig, or .lux) and click the "Browse" button to navigate to that file's location on your computer. Once the blue "loading" bar below the "Browse for your file" secondary header says "Upload complete", then a figure appears under <a href=https://github.com/baeolophus/TAGS_shiny_version#step-2-calibration-period-information>Step 5</a>. An error may show briefly under Step 5, but the plot is still loading as long as the loading indicator (three vertical blue bars) returns. Then, proceed to <a href="https://github.com/baeolophus/TAGS_shiny_version#step-2-calibration-period-information">Step 2</a>.
-![Screenshot showing Step 1 completed; the "loading" bar is filled with blue stripes and text that says "upload complete" and a line graph of all the data appears under the Step 5 header.](Step1_screenshot.PNG?raw=true "ShinyApps TAGS screen after Step 1 completed.")
+![Step 1 completed; the "loading" bar is filled with blue stripes and text that says "upload complete" and a line graph of all the data appears under the Step 5 header.](Step1_screenshot.PNG?raw=true "ShinyApps TAGS screen after Step 1 completed.")
 
   
  ## Step 2. Calibration period information
@@ -48,7 +48,7 @@ For the .lig example file, enter sample values (from Cooper et al. (2015)'s <a h
 
 These values result in a calculated sun angle of -3.42629187230021.  <a href="https://github.com/baeolophus/TAGS_shiny_version/issues/7">Known bug</a>: if you click "calculate sun angle from data" before entering values, the app will crash.
  
- ![Screenshot showing Step 2 completed; values are latitude 44.655523, longitude -84.647636, and dates 2014-06-13 to 2014-07-29.  These result in a calculated sun angle of -3.42629187230021.](Step2_screenshot.PNG?raw=true "ShinyApps TAGS screen after Step 2 completed.") 
+ ![Step 2 completed; values are latitude 44.655523, longitude -84.647636, and dates 2014-06-13 to 2014-07-29.  These result in a calculated sun angle of -3.42629187230021.](Step2_screenshot.PNG?raw=true "ShinyApps TAGS screen after Step 2 completed.") 
  
  ## Step 3. Light threshold entry
  The default light threshold value is 5.5.  For all three example files, we will leave this value as-is.  For information on editing this value, read <a href="https://github.com/baeolophus/TAGS_shiny_version#step-3-light-threshold-entry-1">the documentation for Step 3</a>.
@@ -61,16 +61,16 @@ The default threshold for detecting problem areas in light data is 5 hours.  For
  
  ### .lig sample file screenshots and descriptions
 The example .lig (Cooper et al. 2017a, b; http://dx.doi.org/10.5441/001/1.h2b30454) is easier to edit if we adjust the window length to 1.
-![Screenshot showing Step 5 first change: moving "Editing Window Length" from default value of 2 to 1 (units = days).](Step5_screenshot1.PNG?raw=true "ShinyApps TAGS screen during adjusting Step 5 values; first change of setting "editing window length" value to 1.") 
+![Step 5 first change: moving "Editing Window Length" from default value of 2 to 1 (units = days).](Step5_screenshot1.PNG?raw=true "ShinyApps TAGS screen during adjusting Step 5 values; first change of setting "editing window length" value to 1.") 
 
  With default values for finding problem areas and the window length at 1, we can see a problem area exists from 2014-06-07T11:32:36Z to 2014-06-07T15:14:36Z (rows 351-462).  Using the mouse cursor to click and drag, set the area to toggle points in and out of exclusion.
-![Screenshot showing Step 5 scroll down to edit window](Step5_screenshot2.PNG?raw=true "ShinyApps TAGS screen scrolling down through Step 5 to see editing window") 
+![Step 5 scroll down to edit window](Step5_screenshot2.PNG?raw=true "ShinyApps TAGS screen scrolling down through Step 5 to see editing window") 
 
 Once the points are selected (the rectangular box will stay in the plot window), click "Toggle Selected Points".  The points, previously filled with black, become empty circles.
-![Screenshot showing Step 5 editing window with problem light levels excluded (the points have become unfilled).](Step5_screenshot3.PNG?raw=true "Screenshot showing Step 5 editing window with problem light levels excluded (the points have become unfilled).") 
+![Step 5 editing window with problem light levels excluded (the points have become unfilled).](Step5_screenshot3.PNG?raw=true "Step 5 editing window with problem light levels excluded (the points have become unfilled).") 
 
 Below the editing window plot, scroll down to see all of the buttons.  Clicking "Show/refresh edited values" will generate a table of points that have been excluded.
-![Screenshot showing Step 5 table (below editing window) with problem light levels excluded.](Step5_screenshot4.PNG?raw=true "Screenshot showing Step 5 table (below editing window) with problem light levels excluded") 
+![Step 5 table (below editing window) with problem light levels excluded.](Step5_screenshot4.PNG?raw=true "Step 5 table (below editing window) with problem light levels excluded") 
 
 ### .csv sample file screenshots and descriptions
 - .csv (Bridge 2015; available at https://www.movebank.org/cms/webapp?gwt_fragment=page=studies,path=study78970444)
@@ -79,11 +79,19 @@ Below the editing window plot, scroll down to see all of the buttons.  Clicking 
 ### .lux sample file screenshots and descriptions
  - .lux (Hill and Renfrew 2019a, b; http://dx.doi.org/10.5441/001/1.c6b47s0r)
   - With default values for finding problem areas, problem points exist at times YYYY-MM-DD HH:MM:SS in this dataset. 
- 
- ## Step 6. Generate coordinates
- 
- ## Step 7. Download data
- FIXME: link to sample files in github repo.
+
+## Step 6. Generate coordinates
+Step 6 has two parts to examine your edited coordinates.
+### .lig sample file screenshots and descriptions
+Step 6a lets you see your edited and unedited points with datetime and lightlevel together.  You can use the "search" box in the upper right corner above the table to filter.  This screenshot shows "true" written in search, which pulls up the 99 excluded points.
+![Step 6a table (below editing window and editing table) with only excluded points shown (excluded = TRUE).](Step6_screenshot1.PNG?raw=true "Step 6a table (below editing window and editing table) with only excluded points shown (excluded = TRUE)") 
+
+
+### .csv sample file screenshots and descriptions
+### .lux sample file screenshots and descriptions
+
+## Step 7. Download data
+FIXME: link to sample files in github repo.
 
 # Functionality documentation
 Below, we explain the default and available values at each step of the TAGS process.  
