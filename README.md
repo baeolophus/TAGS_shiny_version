@@ -93,7 +93,10 @@ Step 6b takes the generated coordinates from Step 6a and plots them on a map.
 ### .lux sample file screenshots and descriptions
 
 ## Step 7. Download data
-FIXME: link to sample files in github repo.
+The three download buttons will export three different file formats.  For the sample .lig file originally named GL36_000.lig, , the downloaded file will be named as follows
+- "Download TAGS format (original data with edits and twilights)" creates <a href="/data/TAGS_format_data-GL36_000.lig2023-02-20.csv">TAGS_format_data-GL36_000.lig2023-02-20.csv</a>.
+- "Download edited coordinates only" creates <a href="/data/coord_data-GL36_000.lig2023-02-20.csv">coord_data-GL36_000.lig2023-02-20.csv</a>.
+- "Download edited twilights only" creates <a href="/data/twilights_data-GL36_000.lig2023-02-20.csv">twilights_data-GL36_000.lig2023-02-20.csv</a>.
 
 # Functionality documentation
 Below, we explain the default and available values at each step of the TAGS process.  
