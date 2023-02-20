@@ -60,7 +60,7 @@ These values result in a calculated sun angle of -3.42629187230021.  <a href="ht
  The default light threshold value is 5.5.  We will leave this value as-is.  For information on editing this value, read <a href="https://github.com/baeolophus/TAGS_shiny_version#step-3-light-threshold-entry-1">the documentation for Step 3</a>.
  
  ## Step 4. Optional: change value for finding problem areas
-The default threshold for detecting problem areas in light data is 5 hours.  We will leave this value as-is.  For information on editing this value, read <a href="[https://github.com/baeolophus/TAGS_shiny_version#step-3-light-threshold-entry-1](https://github.com/baeolophus/TAGS_shiny_version#step-4-optional-change-value-for-finding-problem-areas-1)">the documentation for Step 4</a>.
+The default threshold for detecting problem areas in light data is 5 hours.  We will leave this value as-is.  For information on editing this value, read <a href="https://github.com/baeolophus/TAGS_shiny_version/blob/main/README.md#step-4-optional-change-value-for-finding-problem-areas-1">the documentation for Step 4</a>.
  
  ## Step 5. Find problem areas and edit your data
 To determine if the problem highlighter "red box" is working correctly, examine the example file.  The example .lig is easier to edit if we adjust the window length to 1.
