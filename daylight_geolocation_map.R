@@ -10,14 +10,46 @@ library(ggpubr)
 library(maps)
 library(terminator)
 
+#########
+# Data
+#########
 
+## Map
 WorldData <- map_data('world') %>% fortify()
 
+## Sunlight terminator line
 arbitrary_time <- 12
 terminator_line <- terminator(as.integer((as.POSIXct(Sys.Date()) + (60*60*(arbitrary_time)))), -180, 180, 0.1)
 
 arbitrary_day <- median(terminator_line$lat)+15
 
+## second panel data for light intensity 
+#Create data frame with 24 rows to scale to latitude/daylength (x)
+sun_df <- data.frame("Time24hr" = seq(0:239),
+                     "Light" = -90,
+                     "scaled_longitude" = seq(from= min(terminator_line$lon),
+                                              to = max(terminator_line$lon), 
+                                              length.out = 240))
+
+# Show light for daylight
+sun_df$Light[sun_df$scaled_longitude >= min(terminator_line$lon[terminator_line$lat>arbitrary_day])&
+               sun_df$scaled_longitude <= max(terminator_line$lon[terminator_line$lat>arbitrary_day])] <- 90
+
+# Add in noisy points for demo in rows 50, 100-101, 130, 145, 150
+sun_df$Light[c(50)] <- -50
+sun_df$Light[c(100:101)] <- -30
+sun_df$Light[c(145)] <- 68
+sun_df$Light[c(130, 150)] <- 65
+
+sun_df$daylight <- "night"
+sun_df$daylight[sun_df$scaled_longitude >= min(terminator_line$lon[terminator_line$lat>arbitrary_day])&
+                  sun_df$scaled_longitude <= max(terminator_line$lon[terminator_line$lat>arbitrary_day])] <- "day"
+
+#########
+# PLOTS
+#########
+
+## top panel (terminator line map and sample geolocator location)
 locator_map <- ggplot() +
   geom_map(data = WorldData, map = WorldData,
            aes(group = group, map_id=region),
@@ -96,30 +128,7 @@ locator_map <- ggplot() +
 locator_map
 
 
-#Create data frame with 24 rows to scale to latitude/daylength (x)
-sun_df <- data.frame("Time24hr" = seq(0:239),
-                     "Light" = -90,
-                     "scaled_longitude" = seq(from= min(terminator_line$lon),
-                                              to = max(terminator_line$lon), 
-                                              length.out = 240))
-
-# Show light for daylight
-sun_df$Light[sun_df$scaled_longitude >= min(terminator_line$lon[terminator_line$lat>arbitrary_day])&
-               sun_df$scaled_longitude <= max(terminator_line$lon[terminator_line$lat>arbitrary_day])] <- 90
-
-# Add in noisy points for demo in rows 50, 100-101, 130, 145, 150
-sun_df$Light[c(50)] <- -50
-sun_df$Light[c(100:101)] <- -30
-sun_df$Light[c(145)] <- 68
-sun_df$Light[c(130, 150)] <- 65
-
-sun_df$daylight <- "night"
-sun_df$daylight[sun_df$scaled_longitude >= min(terminator_line$lon[terminator_line$lat>arbitrary_day])&
-                  sun_df$scaled_longitude <= max(terminator_line$lon[terminator_line$lat>arbitrary_day])] <- "day"
-
-
-
-# create light plot (lower panel)
+## create light plot (lower panel) showing light intensity in relation to geolocator location
 light_plot <- ggplot(data = sun_df,
                      mapping = aes(x = scaled_longitude,
                                    y = Light))+
@@ -194,3 +203,13 @@ ggarrange(locator_map,
           align = "hv"
           )
 
+ggsave("Figure1.svg",
+       height = 4,
+       width = 4,
+       units = c("in"))
+
+# After saving, open in inkscape
+# and move the lower figure up closer to top figure.
+# Then pull the arrows from the map 
+# to touch the top of the lower panel light intensity.
+# Save as "Figure1-polished_arrangement.svg".
