@@ -57,11 +57,26 @@ These values result in a calculated sun angle of -3.42629187230021.  <a href="ht
 The default threshold for detecting problem areas in light data is 5 hours.  For all three example files, we will leave this value as-is.  For information on editing this value, read <a href="[https://github.com/baeolophus/TAGS_shiny_version#step-3-light-threshold-entry-1](https://github.com/baeolophus/TAGS_shiny_version#step-4-optional-change-value-for-finding-problem-areas-1)">the documentation for Step 4</a>.
  
  ## Step 5. Find problem areas and edit your data
- You can use our three sample files to determine if the problem highlighter "red box" is working correctly.
-- .lig (Cooper et al. 2017a, b; http://dx.doi.org/10.5441/001/1.h2b30454)
-  - With default values for finding problem areas, a problem area exists from 2014-06-07T11:32:36Z to 2014-06-07T15:14:36Z (rows 351-462).
+ You can use our three sample files to determine if the problem highlighter "red box" is working correctly.  
+ 
+ ### .lig sample file screenshots and descriptions
+The example .lig (Cooper et al. 2017a, b; http://dx.doi.org/10.5441/001/1.h2b30454) is easier to edit if we adjust the window length to 1.
+![Screenshot showing Step 5 first change: moving "Editing Window Length" from default value of 2 to 1 (units = days).](Step5_screenshot1.PNG?raw=true "ShinyApps TAGS screen during adjusting Step 5 values; first change of setting "editing window length" value to 1.") 
+
+ With default values for finding problem areas and the window length at 1, we can see a problem area exists from 2014-06-07T11:32:36Z to 2014-06-07T15:14:36Z (rows 351-462).  Using the mouse cursor to click and drag, set the area to toggle points in and out of exclusion.
+![Screenshot showing Step 5 scroll down to edit window](Step5_screenshot2.PNG?raw=true "ShinyApps TAGS screen scrolling down through Step 5 to see editing window") 
+
+Once the points are selected (the rectangular box will stay in the plot window), click "Toggle Selected Points".  The points, previously filled with black, become empty circles.
+![Screenshot showing Step 5 editing window with problem light levels excluded (the points have become unfilled).](Step5_screenshot3.PNG?raw=true "Screenshot showing Step 5 editing window with problem light levels excluded (the points have become unfilled).") 
+
+Below the editing window plot, scroll down to see all of the buttons.  Clicking "Show/refresh edited values" will generate a table of points that have been excluded.
+![Screenshot showing Step 5 table (below editing window) with problem light levels excluded.](Step5_screenshot4.PNG?raw=true "Screenshot showing Step 5 table (below editing window) with problem light levels excluded") 
+
+### .csv sample file screenshots and descriptions
 - .csv (Bridge 2015; available at https://www.movebank.org/cms/webapp?gwt_fragment=page=studies,path=study78970444)
   - With default values for finding problem areas, problem points exist at times YYYY-MM-DD HH:MM:SS in this dataset.
+
+### .lux sample file screenshots and descriptions
  - .lux (Hill and Renfrew 2019a, b; http://dx.doi.org/10.5441/001/1.c6b47s0r)
   - With default values for finding problem areas, problem points exist at times YYYY-MM-DD HH:MM:SS in this dataset. 
  
