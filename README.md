@@ -42,15 +42,21 @@ TAGS works with generic .csv data containing suitable headers, as well as two ge
  ## Step 2. Calibration period information
  
  ## Step 3. Light threshold entry
+ The default light threshold value is 5.5.
  
  ## Step 4. Optional: change value for finding problem areas
-
+The default threshold for detecting problem areas in light data is 5 hours.
  
  ## Step 5. Find problem areas and edit your data
+ You can use our three sample files to determine if the problem highlighter "red box" is working correctly.
+ 
 - .lux (Hill and Renfrew 2019a, b; http://dx.doi.org/10.5441/001/1.c6b47s0r)
   - With default values for finding problem areas, problem points exist at times YYYY-MM-DD HH:MM:SS in this dataset.
 - .lig (Cooper et al. 2017a, b; http://dx.doi.org/10.5441/001/1.h2b30454)
-  - With default values for finding problem areas, problem points exist at times YYYY-MM-DD HH:MM:SS in this dataset.
+  - With default values for finding problem areas, a problem area exists from 2014-06-07T11:32:36Z to 2014-06-07T15:14:36Z (rows 351-462).
+
+
+
 - .csv (Bridge 2015; available at https://www.movebank.org/cms/webapp?gwt_fragment=page=studies,path=study78970444)
   - With default values for finding problem areas, problem points exist at times YYYY-MM-DD HH:MM:SS in this dataset.
  
@@ -85,8 +91,8 @@ The window settings are as follows:
 
 The editing plot (the second plot in this section) can be moved in two ways: by editing window or by problem (as illustrated in the first plot).  Use the Previous and Next buttons to move to the next or previous editing window or problem twilight.  You can click individual points to toggle them from included (default) to excluded. Below the editing plot are three buttons.
 - Toggle currently selected points: clicking this button toggles the state (excluded/included) for the currently selected point or points.
-- Reset ALL EXCLUDED POINTS: FIXME
-- Show/refresh edited values: FIXME
+- Reset ALL EXCLUDED POINTS: this returns all excluded points to "excluded" = FALSE.
+- Show/refresh edited values: this shows a table of the edited rows, returning the new (edited) light values.
  
  ## Step 6. Generate coordinates
 - 6A. Generate edited twilights for coordinate calculation: this step creates lat/long coordinates in decimal degrees using the function GeoLight::coord and shows them in a table on the TAGS page.
