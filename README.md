@@ -40,13 +40,13 @@ TAGS works with generic .csv data containing suitable headers, as well as two ge
 
   
  ## Step 2. Calibration period information
-For the .lig example file, enter sample values (from Cooper et al. (2015)'s movebank R code).
+For the .lig example file, enter sample values (from Cooper et al. (2015)'s <a href="https://www.datarepository.movebank.org/bitstream/handle/10255/move.584/Cooper_Annotated_R_Code.txt?sequence=1">movebank R code</a>).
 - Calibration latitude 44.655523
 - Calibration longitude -84.647636
 - Calibration start date 2014-06-13
-- Calibration end date 2014-07-29.
+- Calibration end date 2014-07-29
 
-These values result in a calculated sun angle of -3.42629187230021.  Known bug: if you click "calculate sun angle from data" before entering values, the app will crash.
+These values result in a calculated sun angle of -3.42629187230021.  <a href="https://github.com/baeolophus/TAGS_shiny_version/issues/7">Known bug</a>: if you click "calculate sun angle from data" before entering values, the app will crash.
  
  ![Screenshot showing Step 2 completed; values are latitude 44.655523, longitude -84.647636, and dates 2014-06-13 to 2014-07-29.  These result in a calculated sun angle of -3.42629187230021.](Step2_screenshot.PNG?raw=true "ShinyApps TAGS screen after Step 2 completed.") 
  
@@ -58,16 +58,12 @@ The default threshold for detecting problem areas in light data is 5 hours.
  
  ## Step 5. Find problem areas and edit your data
  You can use our three sample files to determine if the problem highlighter "red box" is working correctly.
- 
-- .lux (Hill and Renfrew 2019a, b; http://dx.doi.org/10.5441/001/1.c6b47s0r)
-  - With default values for finding problem areas, problem points exist at times YYYY-MM-DD HH:MM:SS in this dataset.
 - .lig (Cooper et al. 2017a, b; http://dx.doi.org/10.5441/001/1.h2b30454)
   - With default values for finding problem areas, a problem area exists from 2014-06-07T11:32:36Z to 2014-06-07T15:14:36Z (rows 351-462).
-
-
-
 - .csv (Bridge 2015; available at https://www.movebank.org/cms/webapp?gwt_fragment=page=studies,path=study78970444)
   - With default values for finding problem areas, problem points exist at times YYYY-MM-DD HH:MM:SS in this dataset.
+ - .lux (Hill and Renfrew 2019a, b; http://dx.doi.org/10.5441/001/1.c6b47s0r)
+  - With default values for finding problem areas, problem points exist at times YYYY-MM-DD HH:MM:SS in this dataset. 
  
  ## Step 6. Generate coordinates
  
