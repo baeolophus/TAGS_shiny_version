@@ -61,7 +61,8 @@ The default threshold for detecting problem areas in light data is 5 hours.  For
  
  ### .lig sample file screenshots and descriptions
 The example .lig (Cooper et al. 2017a, b; http://dx.doi.org/10.5441/001/1.h2b30454) is easier to edit if we adjust the window length to 1.
-![Step 5 first change: moving "Editing Window Length" from default value of 2 to 1 (units = days).](Step5_screenshot1.PNG?raw=true "ShinyApps TAGS screen during adjusting Step 5 values; first change of setting "editing window length" value to 1.") 
+
+![Step 5 first change is moving Editing Window Length from default value of 2 to 1, keeping units as days.](Step5_screenshot1.PNG?raw=true "ShinyApps TAGS screen during adjusting Step 5 values; first change of setting editing window length value to 1.") 
 
  With default values for finding problem areas and the window length at 1, we can see a problem area exists from 2014-06-07T11:32:36Z to 2014-06-07T15:14:36Z (rows 351-462).  Using the mouse cursor to click and drag, set the area to toggle points in and out of exclusion.
 ![Step 5 scroll down to edit window](Step5_screenshot2.PNG?raw=true "ShinyApps TAGS screen scrolling down through Step 5 to see editing window") 
