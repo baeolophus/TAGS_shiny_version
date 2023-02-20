@@ -5,7 +5,7 @@ TAGS is <a href="https://tags.shinyapps.io/tags_shiny/">a web-based service</a> 
 <a href="https://tags.shinyapps.io/tags_shiny/">TAGS, the Totally Awesome Geolocator Service</a> is a web-based service that allows you, the researcher, to edit messy geolocator data in a point-and-click format while saving excluded values for reproducible work.  TAGS automatically suggests potential problem areas based on unexpected values (and you can change the threshold for these), lets you move from problem to problem to edit, and shows a map of coordinates generated from your data given your current edits. 
 
 # Installation instructions
-TAGS can be used as a browser-based RShiny app for datasets <30 megabytes (the <a href="https://github.com/baeolophus/TAGS_shiny_version/blob/main/README.md#example-use">Example Use section</a> below has a sample file within this limit).  If you have a dataset >30 mb, please clone the code from the repository to use it on your own computer.
+TAGS can be used as a browser-based RShiny app for datasets <30 megabytes (the <a href="https://github.com/baeolophus/TAGS_shiny_version/blob/main/README.md#example-usage">Example Use section</a> below has a sample file within this limit).  If you have a dataset >30 mb, please clone the code from the repository to use it on your own computer.
 
 ```
 git clone https://github.com/baeolophus/TAGS_shiny_version.git
