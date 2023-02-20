@@ -83,9 +83,11 @@ Below the editing window plot, scroll down to see all of the buttons.  Clicking 
 ## Step 6. Generate coordinates
 Step 6 has two parts to examine your edited coordinates.
 ### .lig sample file screenshots and descriptions
-Step 6a lets you see your edited and unedited points with datetime and lightlevel together.  You can use the "search" box in the upper right corner above the table to filter.  This screenshot shows "true" written in search, which pulls up the 99 excluded points.
+Step 6a generates location points from the edited light data.  At this step, it lets you see your edited and unedited points with datetime and lightlevel together.  You can use the "search" box in the upper right corner above the table to filter.  This screenshot shows "true" written in search, which pulls up the 99 excluded points, so you can spot check dates/times against the Step 5 plot if desired.
 ![Step 6a table (below editing window and editing table) with only excluded points shown (excluded = TRUE).](Step6_screenshot1.PNG?raw=true "Step 6a table (below editing window and editing table) with only excluded points shown (excluded = TRUE)") 
 
+Step 6b takes the generated coordinates from Step 6a and plots them on a map.
+![Step 6b creates a map with geographic locations generated from the edited light level data.](Step6_screenshot2.PNG?raw=true "Step 6b creates a map with geographic locations generated from the edited light level data.") 
 
 ### .csv sample file screenshots and descriptions
 ### .lux sample file screenshots and descriptions
