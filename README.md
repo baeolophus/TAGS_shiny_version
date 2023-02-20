@@ -35,7 +35,7 @@ After the R packages are installed, you can run the R code from within RStudio b
 # Example usage
 
 ## Step 1. Select your file
-TAGS works with generic .csv data containing suitable headers, as well as two geolocator file types (.lig and .lux).  We provide three CC0-licensed data files, one for each file type, to provide an example.  Choose the sample file that has an extension or format matching yours (.csv, .lig, or .lux).  This documentation screenshot shows file upload with a .lig extension.  Once the "loading" bar says "Upload complete", then a figure appears under Step 5. 
+TAGS works with generic .csv data containing suitable headers, as well as two geolocator file types (.lig and .lux).  We provide three CC0-licensed data files, one for each file type, to provide an example.  Choose the sample file that has an extension or format matching yours (.csv, .lig, or .lux) and click the "Browse" button to navigate to that file's location on your computer. Once the blue "loading" bar below the "Browse for your file" secondary header says "Upload complete", then a figure appears under Step 5. Then, proceed to Step 2.
 ![Screenshot showing Step 1 completed; the "loading" bar is filled with blue stripes and text that says "upload complete" and a line graph of all the data appears under the Step 5 header.](Step1_screenshot.PNG?raw=true "ShinyApps TAGS screen after Step 1 completed.")
 
   
