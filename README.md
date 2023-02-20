@@ -94,7 +94,7 @@ Step 6b takes the generated coordinates from Step 6a and plots them on a map.
 ### .lux sample file screenshots and descriptions
 
 ## Step 7. Download data
-The three download buttons will export three different file formats.  For the sample .lig file originally named GL36_000.lig, , the downloaded file will be named as follows
+The three download buttons will export three different file formats, prefixed with the download type and suffixed with the download date.  For the sample .lig file originally named GL36_000.lig, the downloaded file will be named as follows
 - "Download TAGS format (original data with edits and twilights)" creates <a href="/data/TAGS_format_data-GL36_000.lig2023-02-20.csv">TAGS_format_data-GL36_000.lig2023-02-20.csv</a>.
 - "Download edited coordinates only" creates <a href="/data/coord_data-GL36_000.lig2023-02-20.csv">coord_data-GL36_000.lig2023-02-20.csv</a>.
 - "Download edited twilights only" creates <a href="/data/twilights_data-GL36_000.lig2023-02-20.csv">twilights_data-GL36_000.lig2023-02-20.csv</a>.
@@ -135,7 +135,8 @@ The editing plot (the second plot in this section) can be moved in two ways: by 
 Documentation for the underlying Geolight R package is at https://github.com/slisovski/GeoLight and explains how twilights are calculated.
  
  ## Step 7. Download data
-Data can be downloaded as a .csv file in three formats.
+Data can be downloaded as a .csv file in three formats.  All three formats begin with a prefix for the download type and end with the download date appended.  
+
  - Recommended: "Download TAGS format (original data with edits and twilights)" - use this if you are taking the data to another geolocator processing software that requires a TAGS format OR if the format will be accepted by other programs.  One of the additional benefits of the TAGS format is that it documents your edits, so if the next package in your workflow will accept this format, it is a reproducible choice.  Column headers will be "datetime" (in POSIXct format in UTC), "light", "twilight", "interp" (TRUE/FALSE), and "excluded" (TRUE/FALSE)
  - "Download edited coordinates only" - use this if you only want the coordinates for your tag after editing.
  - "Download edited twilights only" - use this if you want the twilights after editing.
