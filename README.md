@@ -40,6 +40,15 @@ TAGS works with generic .csv data containing suitable headers, as well as two ge
 
   
  ## Step 2. Calibration period information
+For the .lig example file, enter sample values (from Cooper et al. (2015)'s movebank R code).
+- Calibration latitude 44.655523
+- Calibration longitude -84.647636
+- Calibration start date 2014-06-13
+- Calibration end date 2014-07-29.
+
+These values result in a calculated sun angle of -3.42629187230021.  Known bug: if you click "calculate sun angle from data" before entering values, the app will crash.
+ 
+ ![Screenshot showing Step 2 completed; values are latitude 44.655523, longitude -84.647636, and dates 2014-06-13 to 2014-07-29.  These result in a calculated sun angle of -3.42629187230021.](Step2_screenshot.PNG?raw=true "ShinyApps TAGS screen after Step 2 completed.") 
  
  ## Step 3. Light threshold entry
  The default light threshold value is 5.5.
