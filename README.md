@@ -146,9 +146,7 @@ To report problems, please create an issue in this repository.
 For questions, please contact <a href="https://libraries.ou.edu/users/claire-curry">Claire M. Curry</a>  or <a href="http://thebridgelab.oucreate.com/peeps/">Eli S. Bridge</a>.
 
 # Datasets cited
-- Cooper NW, Hallworth MT, Marra PP (2017a) Light-level geolocation reveals wintering distribution, migration routes, and primary stopover locations of an endangered long-distance migratory songbird. Journal of Avian Biology. doi:10.1111/jav.01096 
-- Cooper NW, Hallworth MT, Marra PP (2017b) Data from: Light-level geolocation reveals wintering distribution, migration routes, and primary stopover locations of an endangered long-distance migratory songbird. Movebank Data Repository. doi:10.5441/001/1.h2b30454 
-- Hill JM, Renfrew RB (2019a) Migratory patterns and connectivity of two North American grassland bird species. Ecology and Evolution. doi:10.1002/ece3.4795 
-- Hill JM, Renfrew RB (2019b) Data from: Migratory patterns and connectivity of two North American grassland bird species [grasshopper sparrows]. Movebank Data Repository. doi:10.5441/001/1.c6b47s0r 
-- Bridge ES (2015) Painted Bunting ABM 2015. Accessed 16 Dec. 2022.  Availabile at: https://www.movebank.org/cms/webapp?gwt_fragment=page=studies,path=study78970444
+Cooper NW, Hallworth MT, Marra PP (2017a) Light-level geolocation reveals wintering distribution, migration routes, and primary stopover locations of an endangered long-distance migratory songbird. Journal of Avian Biology. doi:10.1111/jav.01096 
+
+Cooper NW, Hallworth MT, Marra PP (2017b) Data from: Light-level geolocation reveals wintering distribution, migration routes, and primary stopover locations of an endangered long-distance migratory songbird. Movebank Data Repository. doi:10.5441/001/1.h2b30454 
 
