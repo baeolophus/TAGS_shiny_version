@@ -83,6 +83,7 @@ sidebarLayout(
                    actionButton("calculate", "Calculate sun angle from data"),
                    br(),
                    h3("Step 3. Light threshold entry"),
+                   p("Be sure to enter a value within the range of your data. For example, if the values of light in your dataset range from 40 to 200, you will need to increase the light threshold to a value between 40 and 200"),
                    #Enter a value for light threshold to calculate sunrise/sunset.
                    numericInput("light_threshold", 
                                 h4("Light threshold"), 
