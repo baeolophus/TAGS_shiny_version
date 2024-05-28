@@ -52,6 +52,13 @@ sidebarLayout(
                                                ".lux"
                                 ),
                                 selected = ".csv (generic data)"),
+                   br(),
+                   radioButtons("dateformat", 
+                                label = "Select your date format before browsing for your file",
+                                choices = list("d/m/y H:M:S",
+                                               "Y/m/d H:M:S"
+                                ),
+                                selected = "d/m/y H:M:S"),
                    
                    fileInput("filename",
                              label = "Browse for your file",
